@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -11,20 +12,21 @@ import {
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email === 'admin@hospital.com' && password === 'admin123') {
       localStorage.setItem('admin', 'true');
       onLogin();
-      window.location.href = '/';
+    //   window.location.href = '/';
+    navigate('/')
     } else {
       alert('Galat email ya password');
     }
   };
 
   return (
-    <Container maxWidth="sm"  >
+    <Container>
       <Paper elevation={6} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Admin Login
