@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import App from "./App";
 import {
@@ -16,12 +16,41 @@ import {
   Stream,
 } from "./scenes";
 
+import ProtectedRoute from "./ProtectedRoutes"; // ✅ Make sure this is correct
+import AdminLogin from "./scenes/admin/Adminlogin"; // ✅ Login page
+
 const AppRouter = () => {
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(
+    localStorage.getItem("admin") === "true"
+  );
+
+  useEffect(() => {
+    const checkLogin = () => {
+      const admin = localStorage.getItem("admin") === "true";
+      setIsAdminLoggedIn(admin);
+    };
+    checkLogin();
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<App />}>
-          <Route path="/" element={<Dashboard />} />
+        {/* 👇 Login Route */}
+        <Route
+          path="/login"
+          element={<AdminLogin onLogin={() => setIsAdminLoggedIn(true)} />}
+        />
+
+        {/* 👇 Protected Route wrapping App layout */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute isLoggedIn={isAdminLoggedIn}>
+              <App />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
           <Route path="/patient" element={<Team />} />
           <Route path="/patienthistory" element={<Contacts />} />
           <Route path="/invoices" element={<Invoices />} />
