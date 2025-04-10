@@ -36,18 +36,18 @@ const AppRouter = () => {
     <Router>
       <Routes>
         {/* 👇 Login Route */}
-        <Route
+        {/* <Route
           path="/login"
           element={<AdminLogin onLogin={() => setIsAdminLoggedIn(true)} />}
-        />
+        /> */}
 
         {/* 👇 Protected Route wrapping App layout */}
         <Route
           path="/"
           element={
-            <ProtectedRoute isLoggedIn={isAdminLoggedIn}>
+            // <ProtectedRoute isLoggedIn={isAdminLoggedIn}>
               <App />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           }
         >
           <Route index element={<Dashboard />} />

@@ -92,17 +92,16 @@ function Dashboard() {
       </Button>
 
       <Box
-        display=""
-        flexWrap={"wrap"}
+       width="100%"
       >
-        <Box display="flex" justifyContent="space-around" height="250px">
+        <Box display="flex" ml="15px"  height="250px" gap={4} >
           <Box
             bgcolor={colors.primary[400]}
             display="flex"
             alignItems="center"
             justifyContent="center"
             height="200px"
-            width="500px"
+            width="30%"
           >
             <StatBox
               total={patientData.length}
@@ -123,7 +122,7 @@ function Dashboard() {
             justifyContent="center"
             position="relative"
             height="200px"
-            width="500px"
+            width="30%"
           >
             <StatBox
               total={patientData.length - calculateAppoinment}
@@ -167,7 +166,7 @@ function Dashboard() {
               Add Appointment
             </Button>
           </Box>
-          <Box width="500px" height="500px"  bgcolor={colors.primary[400]} overflow="auto">
+          <Box width="30%" height="500px"  bgcolor={colors.primary[400]} overflow="auto">
             <Box borderBottom={`4px solid ${colors.primary[500]}`} p="15px">
               <Typography
                 color={colors.gray[100]}
@@ -222,7 +221,7 @@ function Dashboard() {
         </Box>
           <Box
             height="380px"
-            width="1050px"
+            width="62%"
             ml="15px"
 
             bgcolor={colors.primary[400]}
