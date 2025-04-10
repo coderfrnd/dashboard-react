@@ -1,26 +1,10 @@
 import { ResponsivePie } from "@nivo/pie";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
-import { useContext } from "react";
-import { ToggledContext } from "../App";
 
-const PieChart = () => {
-  const { financialData } = useContext(ToggledContext);
+const PieChart = ({ pieData }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
-  // Count payment statuses
-  const statusCounts = financialData.reduce((acc, item) => {
-    acc[item.paymentStatus] = (acc[item.paymentStatus] || 0) + 1;
-    return acc;
-  }, {});
-
-  // Convert to pie chart format
-  const pieData = Object.entries(statusCounts).map(([status, count]) => ({
-    id: status,
-    label: status,
-    value: count,
-  }));
 
   return (
     <ResponsivePie
@@ -66,13 +50,26 @@ const PieChart = () => {
       arcLinkLabelsTextColor={colors.gray[100]}
       arcLinkLabelsThickness={2}
       arcLinkLabelsColor={{ from: "color" }}
-      enableArcLabels={false}
+      enableArcLabels={true}
       arcLabelsRadiusOffset={0.4}
       arcLabelsSkipAngle={7}
       arcLabelsTextColor={{
         from: "color",
         modifiers: [["darker", 2]],
       }}
+      tooltip={({ datum }) => (
+        <div
+          style={{
+            background: "#fff",
+            padding: "6px 9px",
+            borderRadius: "4px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            color: "#333",
+          }}
+        >
+          <strong>{datum.label}</strong>: {datum.value}
+        </div>
+      )}
       defs={[
         {
           id: "dots",

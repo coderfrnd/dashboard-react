@@ -1,12 +1,17 @@
 import { Box } from "@mui/material";
 import { Header, StreamChart } from "../../components";
+import Invoices from "../invoices";
+import { useContext } from "react";
+import { ToggledContext } from "../../App";
 
 const Stream = () => {
+  // useContext
+  // ToggledContext
+  const {financialData} = useContext(ToggledContext)
   return (
     <Box m="20px">
-      <Header title="Stream Chart" subtitle="Simple Stream Chart" />
       <Box height="75vh">
-        <StreamChart />
+       <Invoices financialData={financialData} header={"Financial Details"} />
       </Box>
     </Box>
   );

@@ -9,6 +9,8 @@ import {
 import { Header } from "../../components";
 import { Formik } from "formik";
 import * as yup from "yup";
+import { useContext } from "react";
+import { ToggledContext } from "../../App";
 
 const initialValues = {
   name: "",
@@ -35,12 +37,12 @@ const checkoutSchema = yup.object().shape({
 });
 
 const Form = () => {
+  const {setstaffData} =  useContext(ToggledContext)
   const isNonMobile = useMediaQuery("(min-width:600px)");
-
   const handleFormSubmit = async (values, actions) => {
     try {
       const response = await fetch(
-        "https://dashboad-production.up.railway.app/staffDashboard",
+        "http://localhost:3000/staffDashboard",
         {
           method: "POST",
           headers: {
@@ -55,8 +57,8 @@ const Form = () => {
       }
 
       const data = await response.json();
+      setstaffData((prev)=>[...prev,data])
       console.log("Staff created:", data);
-
       actions.resetForm({ values: initialValues });
       alert("New staff created successfully!");
     } catch (error) {

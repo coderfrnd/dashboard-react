@@ -16,8 +16,8 @@ import {
   Stream,
 } from "./scenes";
 
-import ProtectedRoute from "./ProtectedRoutes"; // ✅ Make sure this is correct
-import AdminLogin from "./scenes/admin/Adminlogin"; // ✅ Login page
+import ProtectedRoute from "./ProtectedRoutes"; 
+import AdminLogin from "./scenes/admin/Adminlogin"; 
 
 const AppRouter = () => {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(
@@ -35,19 +35,16 @@ const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        {/* 👇 Login Route */}
-        {/* <Route
+        <Route
           path="/login"
           element={<AdminLogin onLogin={() => setIsAdminLoggedIn(true)} />}
-        /> */}
-
-        {/* 👇 Protected Route wrapping App layout */}
+        />
         <Route
           path="/"
           element={
-            // <ProtectedRoute isLoggedIn={isAdminLoggedIn}>
+            <ProtectedRoute isLoggedIn={isAdminLoggedIn}>
               <App />
-            // </ProtectedRoute>
+            </ProtectedRoute>
           }
         >
           <Route index element={<Dashboard />} />
@@ -58,7 +55,7 @@ const AppRouter = () => {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/bar" element={<Bar />} />
           <Route path="/pie" element={<Pie />} />
-          <Route path="/stream" element={<Stream />} />
+          <Route path="/finance" element={<Stream />} />
           <Route path="/line" element={<Line />} />
           <Route path="/staffhistory" element={<FAQ />} />
           <Route path="/geography" element={<Geography />} />

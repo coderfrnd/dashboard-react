@@ -14,8 +14,6 @@ import {
   MenuOutlined,
   PeopleAltOutlined,
   PersonOutlined,
-  ReceiptOutlined,
-  TimelineOutlined,
   WavesOutlined,
 } from "@mui/icons-material";
 import avatar from "../../../assets/images/avatar.png";
@@ -103,14 +101,14 @@ const SideBar = () => {
           />
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="h3" fontWeight="bold" color={colors.gray[100]}>
-              Tony Stark
+            Software Engineer Admin
             </Typography>
             <Typography
               variant="h6"
               fontWeight="500"
               color={colors.greenAccent[500]}
             >
-              VP Fancy Admin
+           
             </Typography>
           </Box>
         </Box>
@@ -164,12 +162,6 @@ const SideBar = () => {
             path="/patienthistory"
             colors={colors}
             icon={<ContactsOutlined />}
-          />
-          <Item
-            title="Invoices Balances"
-            path="/invoices"
-            colors={colors}
-            icon={<ReceiptOutlined />}
           />
         </Menu>
         <Typography
@@ -227,6 +219,12 @@ const SideBar = () => {
             },
           }}
         >
+           <Item
+            title="Financial Details"
+            path="/finance"
+            colors={colors}
+            icon={<WavesOutlined />}
+          />
           <Item
             title="Bar Chart"
             path="/bar"
@@ -240,22 +238,10 @@ const SideBar = () => {
             icon={<DonutLargeOutlined />}
           />
           <Item
-            title="Line Chart"
-            path="/line"
-            colors={colors}
-            icon={<TimelineOutlined />}
-          />
-          <Item
             title="Geography Chart"
             path="/geography"
             colors={colors}
             icon={<MapOutlined />}
-          />
-          <Item
-            title="Stream Chart"
-            path="/stream"
-            colors={colors}
-            icon={<WavesOutlined />}
           />
         </Menu>
       </Box>

@@ -1,33 +1,24 @@
-/* eslint-disable react/prop-types */
+
 import { ResponsiveBar } from "@nivo/bar";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
-import { useContext } from "react";
-import { ToggledContext } from "../App";
 
-const BarChart = ({ isDashboard = false }) => {
-  const { financialData } = useContext(ToggledContext);
+const BarChart = ({
+  data,
+  indexBy = "category",
+  keys = ["value"],
+  isDashboard = false,
+  xAxisLabel = "Category",
+  yAxisLabel = "Value",
+}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  // Group and sum by paymentStatus
-  const statusTotals = financialData.reduce((acc, item) => {
-    const key = item.paymentStatus || "Unknown";
-    acc[key] = (acc[key] || 0) + item.amount;
-    return acc;
-  }, {});
-
-  // Format for Nivo Bar Chart
-  const barData = Object.entries(statusTotals).map(([status, amount]) => ({
-    paymentStatus: status,
-    totalAmount: amount,
-  }));
-
   return (
     <ResponsiveBar
-      data={barData}
-      keys={["totalAmount"]}
-      indexBy="paymentStatus"
+      data={data}
+      keys={keys}
+      indexBy={indexBy}
       theme={{
         axis: {
           domain: { line: { stroke: colors.gray[100] } },
@@ -38,6 +29,16 @@ const BarChart = ({ isDashboard = false }) => {
           },
         },
         legends: { text: { fill: colors.gray[100] } },
+        tooltip: {
+          container: {
+            background: "#fff",
+            color: "#333",
+            fontSize: "14px",
+            borderRadius: "4px",
+            padding: "8px 12px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+          },
+        },
       }}
       margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
       padding={0.3}
@@ -54,7 +55,7 @@ const BarChart = ({ isDashboard = false }) => {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "Payment Status",
+        legend: isDashboard ? undefined : xAxisLabel,
         legendPosition: "middle",
         legendOffset: 32,
       }}
@@ -62,7 +63,7 @@ const BarChart = ({ isDashboard = false }) => {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "Total Amount",
+        legend: isDashboard ? undefined : yAxisLabel,
         legendPosition: "middle",
         legendOffset: -40,
       }}
@@ -91,9 +92,23 @@ const BarChart = ({ isDashboard = false }) => {
           ],
         },
       ]}
+      tooltip={({ id, value, indexValue }) => (
+        <div
+          style={{
+            background: "#fff",
+            padding: "6px 9px",
+            borderRadius: "4px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            color: "#333",
+          }}
+        >
+          <strong>{id}</strong>: {value} <br />
+          in <strong>{indexValue}</strong>
+        </div>
+      )}
       role="application"
       barAriaLabel={(e) =>
-        `${e.id}: ${e.formattedValue} in status: ${e.indexValue}`
+        `${e.id}: ${e.formattedValue} in ${e.indexValue}`
       }
     />
   );

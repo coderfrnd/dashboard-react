@@ -10,7 +10,7 @@ import Bar from "./bar";
 import Line from "./line";
 import Pie from "./pie";
 import Stream from "./stream";
-import FAQ from "./faq";
+import FAQ from "./staffDetails";
 import Geography from "./geography";
 
 export {

@@ -1,17 +1,28 @@
-import { Box } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Header } from "../../components";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { ToggledContext } from "../../App";
 import { useTheme } from "@mui/material/styles";
 import { tokens } from "../../theme";
 
 const Staff = () => {
   const { staffData } = useContext(ToggledContext);
-  console.log(staffData);
+  const [filteredData, setFilteredData] = useState([]);
+  const [filter, setFilter] = useState("All");
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  useEffect(() => {
+    if (filter === "All") {
+      setFilteredData(staffData);
+    } else if (filter === "Present") {
+      setFilteredData(staffData.filter((staff) => staff.onDuty));
+    } else if (filter === "Absent") {
+      setFilteredData(staffData.filter((staff) => !staff.onDuty));
+    }
+  }, [staffData, filter]);
 
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
@@ -44,11 +55,35 @@ const Staff = () => {
 
   return (
     <Box m="20px">
-      <Header title="Staff" subtitle="Manage Staff" />
+      <Header title="Staff List" subtitle="All the Staff Details" />
+
+      {/* Filter Buttons */}
+      <Stack direction="row" spacing={2} mb={2}>
+        <Button
+          variant={filter === "All" ? "contained" : "outlined"}
+          onClick={() => setFilter("All")}
+        >
+          All
+        </Button>
+        <Button
+          variant={filter === "Present" ? "contained" : "outlined"}
+          color="success"
+          onClick={() => setFilter("Present")}
+        >
+          Present
+        </Button>
+        <Button
+          variant={filter === "Absent" ? "contained" : "outlined"}
+          color="error"
+          onClick={() => setFilter("Absent")}
+        >
+          Absent
+        </Button>
+      </Stack>
+
+      {/* Data Table */}
       <Box
-        mt="40px"
         height="75vh"
-        flex={1}
         sx={{
           "& .MuiDataGrid-root": {
             border: "none",
@@ -79,7 +114,7 @@ const Staff = () => {
         }}
       >
         <DataGrid
-          rows={staffData}
+          rows={filteredData}
           columns={columns}
           initialState={{
             pagination: {

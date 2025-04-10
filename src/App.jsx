@@ -15,17 +15,21 @@ function App() {
   useEffect(() => {
     (async () => {
       let res = await fetch(
-        `https://dashboad-production.up.railway.app/patientDashboard`
+        // `https://dashboad-production.up.railway.app/patientDashboard`
+        `http://localhost:3000/patientDashboard`
       );
       let data = await res.json();
       setPatientData(data);
       let finaRes = await fetch(
-        `https://dashboad-production.up.railway.app/financialDashboard`
+        // `https://dashboad-production.up.railway.app/financialDashboard`
+        `http://localhost:3000/financialDashboard`
       );
       let finData = await finaRes.json();
       setfinancialData(finData);
       let staffRes = await fetch(
-        `https://dashboad-production.up.railway.app/staffDashboard`
+        // `https://dashboad-production.up.railway.app/staffDashboard`
+        `http://localhost:3000/staffDashboard`
+
       );
       let staffD = await staffRes.json();
       setstaffData(staffD);

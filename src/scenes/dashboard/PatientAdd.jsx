@@ -32,7 +32,7 @@ const AddPatientModal = ({ open, onClose, onSuccess }) => {
   const handleSubmit = async () => {
     try {
       const response = await fetch(
-        "https://dashboad-production.up.railway.app/patientDashboard",
+        "http://localhost:3000/patientDashboard",
         {
           method: "POST",
           headers: {
@@ -49,7 +49,8 @@ const AddPatientModal = ({ open, onClose, onSuccess }) => {
       if (!response.ok) {
         throw new Error("Failed to add patient");
       }
-
+      const savedPatient = await response.json()
+      onSuccess?.(savedPatient)
       setNewPatient({
         name: "",
         age: "",
@@ -61,8 +62,6 @@ const AddPatientModal = ({ open, onClose, onSuccess }) => {
         email: "",
         phone: "",
       });
-
-      onSuccess?.(); // Optional callback to refresh or notify
       onClose();
     } catch (err) {
       console.error(err);
