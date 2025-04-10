@@ -32,7 +32,7 @@ const AddPatientModal = ({ open, onClose, onSuccess }) => {
   const handleSubmit = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/patientDashboard",
+        "https://dashboard-gb84.onrender.com/patientDashboard",
         {
           method: "POST",
           headers: {

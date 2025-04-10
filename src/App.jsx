@@ -15,20 +15,20 @@ function App() {
   useEffect(() => {
     (async () => {
       let res = await fetch(
-        // `https://dashboad-production.up.railway.app/patientDashboard`
-        `http://localhost:3000/patientDashboard`
+        `https://dashboard-gb84.onrender.com/patientDashboard`
+        // `http://localhost:3000/patientDashboard`
       );
       let data = await res.json();
       setPatientData(data);
       let finaRes = await fetch(
-        // `https://dashboad-production.up.railway.app/financialDashboard`
-        `http://localhost:3000/financialDashboard`
+        `https://dashboard-gb84.onrender.com/financialDashboard`
+        // `http://localhost:3000/financialDashboard`
       );
       let finData = await finaRes.json();
       setfinancialData(finData);
       let staffRes = await fetch(
-        // `https://dashboad-production.up.railway.app/staffDashboard`
-        `http://localhost:3000/staffDashboard`
+        `https://dashboard-gb84.onrender.com/staffDashboard`
+        // `http://localhost:3000/staffDashboard`
 
       );
       let staffD = await staffRes.json();

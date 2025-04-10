@@ -185,3 +185,16 @@ const Default = ({
 };
 
 export default Default;
+// Name: Abhishek Jaiswal 
+// Email: abhishek20ei02@gmail.com
+
+// Deployed Link: https://dashboard-react-lyart.vercel.app/
+
+// Video: https://drive.google.com/file/d/16IIZ5ltutjwwBDgxV7o5ph_MSHSsVfol/view
+
+// Github : https://github.com/coderfrnd/dashboard-react
+
+// Tech Stack - React and MUI and JSON server
+
+// password -: admin123
+//  email: admin@hospital.com 
