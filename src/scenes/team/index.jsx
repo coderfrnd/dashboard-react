@@ -11,10 +11,31 @@ const Team = () => {
   const colors = tokens(theme.palette.mode);
   const { patientData, setPatientData } = useContext(ToggledContext);
  
+  const handleDeleteClick = async (patient) => {
+    try {
+      const response = await fetch(
+        `https://dashboard-gb84.onrender.com/patientDashboard/${patient.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete patient");
+      }
+
+      // Update local state by removing the deleted patient
+      setPatientData(prevData => prevData.filter(p => p.id !== patient.id));
+    } catch (err) {
+      console.error("Error deleting patient:", err);
+      alert("Failed to delete patient. Please try again.");
+    }
+  };
+
   return (
     <Box m="20px">
       <Header title="Patient" subtitle="Manage Patient" />
-      <Patientlist colors={colors} patientData={patientData} />
+      <Patientlist colors={colors} patientData={patientData} onDeleteClick={handleDeleteClick} />
     </Box>
   );
 };

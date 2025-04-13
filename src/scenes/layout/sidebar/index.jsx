@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Avatar, Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Avatar, Box, IconButton, Typography, useTheme, Tooltip, Paper, Divider } from "@mui/material";
 import { useContext, useState } from "react";
 import { tokens } from "../../../theme";
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
@@ -26,12 +26,14 @@ const SideBar = () => {
   const { toggled, setToggled } = useContext(ToggledContext);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
   return (
     <Sidebar
-      backgroundColor={colors.primary[400]}
+      backgroundColor={theme.palette.mode === "dark" ? "#1e1e1e" : "#ffffff"}
       rootStyles={{
         border: 0,
         height: "100%",
+        boxShadow: theme.shadows[4],
       }}
       collapsed={collapsed}
       onBackdropClick={() => setToggled(false)}
@@ -40,13 +42,23 @@ const SideBar = () => {
     >
       <Menu
         menuItemStyles={{
-          button: { ":hover": { background: "transparent" } },
+          button: { 
+            ":hover": { 
+              backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+              transition: theme.transitions.create(['background-color'], {
+                duration: theme.transitions.duration.short,
+              }),
+            },
+            "&.active": {
+              backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+            }
+          },
         }}
       >
         <MenuItem
           rootStyles={{
             margin: "10px 0 20px 0",
-            color: colors.gray[100],
+            color: theme.palette.text.primary,
           }}
         >
           <Box
@@ -54,64 +66,123 @@ const SideBar = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              width: "100%",
             }}
           >
             {!collapsed && (
               <Box
                 display="flex"
                 alignItems="center"
-                gap="12px"
-                sx={{ transition: ".3s ease" }}
+                gap={1.5}
+                sx={{ 
+                  transition: theme.transitions.create(['transform'], {
+                    duration: theme.transitions.duration.short,
+                  }),
+                  "&:hover": {
+                    transform: "scale(1.02)",
+                  }
+                }}
               >
-                <img
-                  style={{ width: "30px", height: "30px", borderRadius: "8px" }}
-                  src={logo}
-                  alt="Argon"
-                />
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 0.5,
+                    borderRadius: 1.25,
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <img
+                    style={{ 
+                      width: "35px", 
+                      height: "35px", 
+                      borderRadius: "10px",
+                    }}
+                    src={logo}
+                    alt="Argon"
+                  />
+                </Paper>
                 <Typography
                   variant="h4"
                   fontWeight="bold"
                   textTransform="capitalize"
                   color={colors.greenAccent[500]}
+                  sx={{
+                    textShadow: theme.shadows[1],
+                  }}
                 >
                   Argon
                 </Typography>
               </Box>
             )}
-            <IconButton onClick={() => setCollapsed(!collapsed)}>
-              <MenuOutlined />
-            </IconButton>
+            <Tooltip title={collapsed ? "Expand Menu" : "Collapse Menu"}>
+              <IconButton 
+                onClick={() => setCollapsed(!collapsed)}
+                sx={{
+                  color: theme.palette.text.primary,
+                  "&:hover": {
+                    color: colors.greenAccent[500],
+                    transform: "rotate(180deg)",
+                    transition: theme.transitions.create(['color', 'transform'], {
+                      duration: theme.transitions.duration.short,
+                    }),
+                  }
+                }}
+              >
+                <MenuOutlined />
+              </IconButton>
+            </Tooltip>
           </Box>
         </MenuItem>
       </Menu>
       {!collapsed && (
-        <Box
+        <Paper
+          elevation={2}
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "10px",
-            mb: "25px",
+            gap: 2,
+            mb: 3,
+            p: 2.5,
+            borderRadius: 1.5,
+            background: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
+            mx: 1.25,
           }}
         >
           <Avatar
             alt="avatar"
             src={avatar}
-            sx={{ width: "100px", height: "100px" }}
+            sx={{ 
+              width: 100, 
+              height: 100,
+              border: `4px solid ${colors.greenAccent[500]}`,
+              boxShadow: theme.shadows[4],
+            }}
           />
           <Box sx={{ textAlign: "center" }}>
-            <Typography variant="h3" fontWeight="bold" color={colors.gray[100]}>
-            Software Engineer Admin
+            <Typography 
+              variant="h3" 
+              fontWeight="bold" 
+              color={theme.palette.text.primary}
+              sx={{
+                textShadow: theme.shadows[1],
+              }}
+            >
+              Software Engineer Admin
             </Typography>
             <Typography
               variant="h6"
               fontWeight="500"
               color={colors.greenAccent[500]}
+              sx={{
+                mt: 0.5,
+                opacity: 0.8,
+              }}
             >
-           
+              Administrator
             </Typography>
           </Box>
-        </Box>
+        </Paper>
       )}
 
       <Box mb={5} pl={collapsed ? undefined : "5%"}>
@@ -119,10 +190,16 @@ const SideBar = () => {
           menuItemStyles={{
             button: {
               ":hover": {
-                color: "#868dfb",
-                background: "transparent",
-                transition: ".4s ease",
+                color: colors.greenAccent[500],
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                transition: theme.transitions.create(['color', 'background-color'], {
+                  duration: theme.transitions.duration.short,
+                }),
               },
+              "&.active": {
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                color: colors.greenAccent[500],
+              }
             },
           }}
         >
@@ -133,21 +210,33 @@ const SideBar = () => {
             icon={<DashboardOutlined />}
           />
         </Menu>
+        <Divider sx={{ my: 1, mx: 2 }} />
         <Typography
           variant="h6"
-          color={colors.gray[300]}
-          sx={{ m: "15px 0 5px 20px" }}
+          color={theme.palette.text.secondary}
+          sx={{ 
+            m: "15px 0 5px 20px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
+          }}
         >
           {!collapsed ? "Patient Data" : " "}
-        </Typography>{" "}
+        </Typography>
         <Menu
           menuItemStyles={{
             button: {
               ":hover": {
-                color: "#868dfb",
-                background: "transparent",
-                transition: ".4s ease",
+                color: colors.greenAccent[500],
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                transition: theme.transitions.create(['color', 'background-color'], {
+                  duration: theme.transitions.duration.short,
+                }),
               },
+              "&.active": {
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                color: colors.greenAccent[500],
+              }
             },
           }}
         >
@@ -164,10 +253,16 @@ const SideBar = () => {
             icon={<ContactsOutlined />}
           />
         </Menu>
+        <Divider sx={{ my: 1, mx: 2 }} />
         <Typography
           variant="h6"
-          color={colors.gray[300]}
-          sx={{ m: "15px 0 5px 20px" }}
+          color={theme.palette.text.secondary}
+          sx={{ 
+            m: "15px 0 5px 20px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
+          }}
         >
           {!collapsed ? "Staff Data" : " "}
         </Typography>
@@ -175,10 +270,16 @@ const SideBar = () => {
           menuItemStyles={{
             button: {
               ":hover": {
-                color: "#868dfb",
-                background: "transparent",
-                transition: ".4s ease",
+                color: colors.greenAccent[500],
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                transition: theme.transitions.create(['color', 'background-color'], {
+                  duration: theme.transitions.duration.short,
+                }),
               },
+              "&.active": {
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                color: colors.greenAccent[500],
+              }
             },
           }}
         >
@@ -201,10 +302,16 @@ const SideBar = () => {
             icon={<HelpOutlineOutlined />}
           />
         </Menu>
+        <Divider sx={{ my: 1, mx: 2 }} />
         <Typography
           variant="h6"
-          color={colors.gray[300]}
-          sx={{ m: "15px 0 5px 20px" }}
+          color={theme.palette.text.secondary}
+          sx={{ 
+            m: "15px 0 5px 20px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
+          }}
         >
           {!collapsed ? " Financial Charts" : " "}
         </Typography>
@@ -212,10 +319,16 @@ const SideBar = () => {
           menuItemStyles={{
             button: {
               ":hover": {
-                color: "#868dfb",
-                background: "transparent",
-                transition: ".4s ease",
+                color: colors.greenAccent[500],
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                transition: theme.transitions.create(['color', 'background-color'], {
+                  duration: theme.transitions.duration.short,
+                }),
               },
+              "&.active": {
+                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                color: colors.greenAccent[500],
+              }
             },
           }}
         >

@@ -8,59 +8,59 @@ export const tokens = (mode) => ({
   ...(mode === "dark"
     ? {
         gray: {
-          100: "#e0e0e0",
-          200: "#c2c2c2",
-          300: "#a3a3a3",
-          400: "#858585",
-          500: "#666666",
-          600: "#525252",
-          700: "#3d3d3d",
-          800: "#292929",
-          900: "#141414",
+          100: "#f5f5f5",
+          200: "#eeeeee",
+          300: "#e0e0e0",
+          400: "#bdbdbd",
+          500: "#9e9e9e",
+          600: "#757575",
+          700: "#616161",
+          800: "#424242",
+          900: "#212121",
         },
         primary: {
-          100: "#d0d1d5",
-          200: "#a1a4ab",
-          300: "#727681",
-          400: "#434957",
-          500: "#141b2d",
-          600: "#101624",
-          700: "#0c101b",
-          800: "#080b12",
-          900: "#040509",
+          100: "#e3f2fd",
+          200: "#bbdefb",
+          300: "#90caf9",
+          400: "#64b5f6",
+          500: "#42a5f5",
+          600: "#2196f3",
+          700: "#1e88e5",
+          800: "#1976d2",
+          900: "#1565c0",
         },
         greenAccent: {
-          100: "#dbf5ee",
-          200: "#b7ebde",
-          300: "#94e2cd",
-          400: "#70d8bd",
-          500: "#4cceac",
-          600: "#3da58a",
-          700: "#2e7c67",
-          800: "#1e5245",
-          900: "#0f2922",
+          100: "#e8f5e9",
+          200: "#c8e6c9",
+          300: "#a5d6a7",
+          400: "#81c784",
+          500: "#66bb6a",
+          600: "#4caf50",
+          700: "#43a047",
+          800: "#388e3c",
+          900: "#2e7d32",
         },
         redAccent: {
-          100: "#f8dcdb",
-          200: "#f1b9b7",
-          300: "#e99592",
-          400: "#e2726e",
-          500: "#db4f4a",
-          600: "#af3f3b",
-          700: "#832f2c",
-          800: "#58201e",
-          900: "#2c100f",
+          100: "#ffebee",
+          200: "#ffcdd2",
+          300: "#ef9a9a",
+          400: "#e57373",
+          500: "#ef5350",
+          600: "#f44336",
+          700: "#e53935",
+          800: "#d32f2f",
+          900: "#c62828",
         },
         blueAccent: {
-          100: "#e1e2fe",
-          200: "#c3c6fd",
-          300: "#a4a9fc",
-          400: "#868dfb",
-          500: "#6870fa",
-          600: "#535ac8",
-          700: "#3e4396",
-          800: "#2a2d64",
-          900: "#151632",
+          100: "#e3f2fd",
+          200: "#bbdefb",
+          300: "#90caf9",
+          400: "#64b5f6",
+          500: "#42a5f5",
+          600: "#2196f3",
+          700: "#1e88e5",
+          800: "#1976d2",
+          900: "#1565c0",
         },
       }
     : {
@@ -133,9 +133,13 @@ export const themeSettings = (mode) => {
         ? {
             primary: {
               main: colors.primary[500],
+              light: colors.primary[400],
+              dark: colors.primary[600],
             },
             secondary: {
               main: colors.greenAccent[500],
+              light: colors.greenAccent[400],
+              dark: colors.greenAccent[600],
             },
             neutral: {
               dark: colors.gray[700],
@@ -143,15 +147,20 @@ export const themeSettings = (mode) => {
               light: colors.gray[100],
             },
             background: {
-              default: colors.primary[500],
+              default: "#121212",
+              paper: "#1e1e1e",
             },
           }
         : {
             primary: {
-              main: colors.primary[100],
+              main: colors.primary[500],
+              light: colors.primary[400],
+              dark: colors.primary[600],
             },
             secondary: {
               main: colors.greenAccent[500],
+              light: colors.greenAccent[400],
+              dark: colors.greenAccent[600],
             },
             neutral: {
               dark: colors.gray[700],
@@ -159,36 +168,125 @@ export const themeSettings = (mode) => {
               light: colors.gray[100],
             },
             background: {
-              default: colors.primary[500],
+              default: "#f5f5f5",
+              paper: "#ffffff",
             },
           }),
     },
     typography: {
-      fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-      fontSize: 12,
+      fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
+      fontSize: 14,
       h1: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 40,
+        fontWeight: 700,
+        letterSpacing: "-0.02em",
       },
       h2: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 32,
+        fontWeight: 600,
+        letterSpacing: "-0.01em",
       },
       h3: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 24,
+        fontWeight: 600,
       },
       h4: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 20,
+        fontWeight: 500,
       },
       h5: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 16,
+        fontWeight: 500,
       },
       h6: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+        fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 14,
+        fontWeight: 500,
+      },
+      button: {
+        textTransform: "none",
+        fontWeight: 500,
+      },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+            padding: "8px 16px",
+            textTransform: "none",
+            fontWeight: 500,
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            },
+          },
+          contained: {
+            "&:hover": {
+              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            },
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            boxShadow: mode === "dark" 
+              ? "0 4px 6px rgba(0, 0, 0, 0.3)"
+              : "0 4px 6px rgba(0, 0, 0, 0.1)",
+            backgroundImage: "none",
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            backgroundImage: "none",
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderBottom: `1px solid ${mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+            padding: "12px 16px",
+          },
+          head: {
+            fontWeight: 600,
+            backgroundColor: mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
+          },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            "&:hover": {
+              backgroundColor: mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: 6,
+            fontWeight: 500,
+          },
+        },
+      },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+          },
+        },
       },
     },
   };

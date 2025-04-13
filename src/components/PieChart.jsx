@@ -1,14 +1,15 @@
+import React from "react";
 import { ResponsivePie } from "@nivo/pie";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
 
-const PieChart = ({ pieData }) => {
+const PieChart = ({ data, isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   return (
     <ResponsivePie
-      data={pieData}
+      data={data}
       theme={{
         axis: {
           domain: {
@@ -42,62 +43,34 @@ const PieChart = ({ pieData }) => {
       padAngle={0.7}
       cornerRadius={3}
       activeOuterRadiusOffset={8}
+      borderWidth={1}
       borderColor={{
         from: "color",
         modifiers: [["darker", 0.2]],
       }}
-      arcLinkLabelsSkipAngle={10}
-      arcLinkLabelsTextColor={colors.gray[100]}
-      arcLinkLabelsThickness={2}
-      arcLinkLabelsColor={{ from: "color" }}
-      enableArcLabels={true}
-      arcLabelsRadiusOffset={0.4}
-      arcLabelsSkipAngle={7}
+      enableArcLink={true}
+      arcLinkSkipAngle={10}
+      arcLinkThickness={1}
+      arcLinkColor={{ from: "color" }}
+      arcLabelsSkipAngle={10}
       arcLabelsTextColor={{
         from: "color",
         modifiers: [["darker", 2]],
       }}
-      tooltip={({ datum }) => (
-        <div
-          style={{
-            background: "#fff",
-            padding: "6px 9px",
-            borderRadius: "4px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-            color: "#333",
-          }}
-        >
-          <strong>{datum.label}</strong>: {datum.value}
-        </div>
-      )}
-      defs={[
-        {
-          id: "dots",
-          type: "patternDots",
-          background: "inherit",
-          color: "rgba(255, 255, 255, 0.3)",
-          size: 4,
-          padding: 1,
-          stagger: true,
-        },
-        {
-          id: "lines",
-          type: "patternLines",
-          background: "inherit",
-          color: "rgba(255, 255, 255, 0.3)",
-          rotation: -45,
-          lineWidth: 6,
-          spacing: 10,
-        },
-      ]}
+      colors={{ scheme: "category10" }}
       legends={[
         {
           anchor: "bottom",
           direction: "row",
+          justify: false,
+          translateX: 0,
           translateY: 56,
+          itemsSpacing: 0,
           itemWidth: 100,
           itemHeight: 18,
-          itemTextColor: "#999",
+          itemTextColor: "#000",
+          itemDirection: "left-to-right",
+          itemOpacity: 1,
           symbolSize: 18,
           symbolShape: "circle",
           effects: [

@@ -1,12 +1,69 @@
 import React from "react";
-import {
-  Box,
-  Button,
-  IconButton,
-  Typography,
-} from "@mui/material";
+import { Box, Typography, Paper, Grid, IconButton } from "@mui/material";
 import { Email, PersonAdd, DownloadOutlined } from "@mui/icons-material";
 import { LineChart, StatBox } from "../../components";
+
+const StatCard = ({ title, value, subtitle, icon }) => (
+  <Paper
+    sx={{
+      p: 3,
+      borderRadius: '12px',
+      backgroundColor: 'white',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 1
+    }}
+  >
+    <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box>
+        <Typography color="#666" fontSize="0.875rem" mb={1}>
+          {title}
+        </Typography>
+        <Typography variant="h4" fontWeight="bold" color="#111">
+          {value}
+        </Typography>
+      </Box>
+      {icon}
+    </Box>
+    <Typography color="#888" fontSize="0.875rem">
+      {subtitle}
+    </Typography>
+  </Paper>
+);
+
+const TransactionCard = ({ email, amount, status }) => (
+  <Box 
+    sx={{ 
+      p: 2,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      mb: 1,
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+    }}
+  >
+    <Box>
+      <Typography color="#fff" variant="subtitle1">
+        {email}
+      </Typography>
+    </Box>
+    <Box 
+      sx={{ 
+        backgroundColor: 
+          status === "Overdue" ? "#ff4444" :
+          status === "Paid" ? "#4CAF50" :
+          "#ffeb3b",
+        px: 2,
+        py: 0.5,
+        borderRadius: '4px',
+        color: status === "Unpaid" ? "#000" : "#fff"
+      }}
+    >
+      ${amount}
+    </Box>
+  </Box>
+);
 
 const Default = ({
   patientData,
@@ -15,171 +72,141 @@ const Default = ({
   financialData,
   colors,
 }) => {
+  // Prepare line chart data
+  const getLineData = () => {
+    const monthlyData = patientData.reduce((acc, patient) => {
+      const month = patient.lastVisit?.slice(0, 7);
+      if (!month) return acc;
+      
+      if (!acc[month]) {
+        acc[month] = { total: 0, active: 0 };
+      }
+      
+      acc[month].total += 1;
+      if (patient.status) {
+        acc[month].active += 1;
+      }
+      
+      return acc;
+    }, {});
+
+    const sortedData = Object.entries(monthlyData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, counts]) => ({
+        x: month,
+        y: counts.total
+      }));
+
+    return sortedData;
+  };
+
+  const totalAppointments = patientData.length;
+  const activeAppointments = calculateAppoinment;
+  const inactivePatients = totalAppointments - calculateAppoinment;
+  const percentageActive = ((activeAppointments / totalAppointments) * 100).toFixed(1);
+  const percentageInactive = ((inactivePatients / totalAppointments) * 100).toFixed(1);
+
   return (
-    <Box width="100%">
-      <Box display="flex" ml="15px" height="250px" gap={4}>
-        {/* Total Appointments Stat */}
-        <Box width="30%">
-          <Typography
-            variant="h6"
-            color={colors.greenAccent[400]}
-            mb="5px"
-            fontWeight="bold"
-            textAlign="center"
-          >
-            Total Appointments
-          </Typography>
-          <Box
-            bgcolor={colors.primary[400]}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            height="200px"
-          >
-            <StatBox
-              total={patientData.length}
-              subtitle="Total Appointment"
-              progress="0.75"
-              increase={`${calculateAppoinment * 10}%`}
-              icon={<Email sx={{ color: colors.greenAccent[600], fontSize: "26px" }} />}
-            />
-          </Box>
-        </Box>
+    <Box sx={{ p: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      <Box mb={4}>
+        <Typography variant="h3" fontWeight="bold" color="#111" mb={1}>
+          Hospital Overview
+        </Typography>
+        <Typography color="#666">
+          Monitor key metrics across all departments
+        </Typography>
+      </Box>
 
-        {/* Inactive Patients Stat */}
-        <Box width="30%">
-          <Typography
-            variant="h6"
-            color={colors.greenAccent[400]}
-            mb="5px"
-            fontWeight="bold"
-            textAlign="center"
-          >
-            Inactive Patients
-          </Typography>
-          <Box
-            backgroundColor={colors.primary[400]}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            position="relative"
-            height="200px"
-          >
-            <StatBox
-              total={patientData.length - calculateAppoinment}
-              subtitle="Inactive Patients"
-              progress={(
-                (patientData.length - calculateAppoinment) / patientData.length
-              ).toFixed(2)}
-              increase={`${(calculateAppoinment * 5).toFixed(1)}%`}
-              icon={<PersonAdd sx={{ color: colors.redAccent[600], fontSize: "26px" }} />}
-            />
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              sx={{
-                position: "absolute",
-                bottom: "8px",
-                right: "120px",
-              }}
-              onClick={() => {
-                const updatedData = [...patientData];
-                const indexToToggle = updatedData.findIndex((p) => p.status === true);
-                if (indexToToggle !== -1) {
-                  updatedData[indexToToggle].status = false;
-                } else {
-                  updatedData[0].status = true;
-                }
-                setPatientData(updatedData);
-              }}
-            >
-              Add Appointment
-            </Button>
-          </Box>
-        </Box>
+      {/* Stats Overview */}
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Appointments"
+            value={totalAppointments}
+            subtitle={`${percentageActive}% active appointments`}
+            icon={<Email sx={{ color: colors.greenAccent[500], fontSize: "26px" }} />}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Inactive Patients"
+            value={inactivePatients}
+            subtitle={`${percentageInactive}% of total patients`}
+            icon={<PersonAdd sx={{ color: colors.redAccent[500], fontSize: "26px" }} />}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Recent Activity"
+            value={activeAppointments}
+            subtitle="Active appointments today"
+            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>📊</Box>}
+          />
+        </Grid>
+      </Grid>
 
-        {/* Recent Transactions */}
-        <Box width="30%" height="500px" bgcolor={colors.primary[400]} overflow="auto">
-          <Typography
-            variant="h6"
-            color={colors.greenAccent[400]}
-            p="15px"
-            fontWeight="bold"
+      {/* Charts Section */}
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} md={8}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: '12px',
+              backgroundColor: 'white',
+              height: '400px'
+            }}
           >
-            Recent Transactions
-          </Typography>
-          {Array.isArray(financialData) &&
-            financialData.map((transaction, index) => (
-              <Box
-                key={`${transaction.id}-${index}`}
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                borderBottom={`4px solid ${colors.primary[500]}`}
-                p="15px"
-              >
-                <Box>
-                  <Typography
-                    color={colors.greenAccent[500]}
-                    variant="h5"
-                    fontWeight="600"
-                  >
-                    {transaction.paymentStatus}
-                  </Typography>
-                  <Typography color={colors.gray[100]}>{transaction.email}</Typography>
-                </Box>
-                <Box
-                  bgcolor={
-                    transaction.paymentStatus === "Paid"
-                      ? colors.greenAccent[600]
-                      : transaction.paymentStatus === "Overdue"
-                      ? colors.redAccent[600]
-                      : "#ffeb3b"
-                  }
-                  p="5px 10px"
-                  borderRadius="4px"
-                >
-                  ${transaction.amount}
-                </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Box>
+                <Typography variant="h6" fontWeight="bold" color="#111">
+                  Patient Visit Trends
+                </Typography>
+                <Typography color="#666">
+                  Monthly Overview
+                </Typography>
               </Box>
-            ))}
-        </Box>
-      </Box>
+              <IconButton>
+                <DownloadOutlined sx={{ fontSize: "26px", color: colors.greenAccent[500] }} />
+              </IconButton>
+            </Box>
+            <Box height="320px">
+              <LineChart 
+                data={getLineData()} 
+                isDashboard={true}
+                xAxisLabel="Month"
+                yAxisLabel="Patients"
+                colors={[colors.greenAccent[500]]}
+              />
+            </Box>
+          </Paper>
+        </Grid>
 
-      {/* Line Chart Section */}
-      <Box height="380px" width="62%" ml="15px" mt="30px" bgcolor={colors.primary[400]}>
-        <Box
-          mt="4px"
-          px="30px"
-          py="25px"
-          display="flex"
-          justifyContent="space-between"
-        >
-          <Box>
-            <Typography
-              variant="h5"
-              fontWeight="600"
-              color={colors.gray[100]}
-            >
-              Total Patient Visited
+        <Grid item xs={12} md={4}>
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: '12px',
+              backgroundColor: colors.primary[400],
+              height: '400px',
+              overflow: 'hidden'
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold" color="white" mb={3}>
+              Recent Transactions
             </Typography>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              color={colors.greenAccent[500]}
-            >
-              {/* Add actual value if needed */}
-            </Typography>
-          </Box>
-          <IconButton>
-            <DownloadOutlined sx={{ fontSize: "26px", color: colors.greenAccent[500] }} />
-          </IconButton>
-        </Box>
-        <Box height="250px" mt="-20px">
-          <LineChart isDashboard={true} />
-        </Box>
-      </Box>
+            <Box sx={{ overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+              {financialData.slice(0, 6).map((transaction, index) => (
+                <TransactionCard
+                  key={index}
+                  email={transaction.email}
+                  amount={transaction.amount}
+                  status={transaction.paymentStatus}
+                />
+              ))}
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

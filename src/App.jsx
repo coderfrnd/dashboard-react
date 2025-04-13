@@ -3,6 +3,7 @@ import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
 import { Outlet } from "react-router-dom";
+import Invoices from './scenes/invoices';
 
 export const ToggledContext = createContext(null);
 function App() {
