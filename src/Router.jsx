@@ -16,6 +16,7 @@ import {
   Stream,
   Patient,
 } from "./scenes";
+import AttendanceManagement from "./scenes/attendance/AttendanceManagement";
 
 import ProtectedRoute from "./ProtectedRoutes"; 
 import AdminLogin from "./scenes/admin/Adminlogin"; 
@@ -60,6 +61,7 @@ const AppRouter = () => {
           <Route path="/line" element={<Line />} />
           <Route path="/staffhistory" element={<FAQ />} />
           <Route path="/geography" element={<Geography />} />
+          <Route path="/attendance" element={<AttendanceManagement />} />
         </Route>
       </Routes>
     </Router>

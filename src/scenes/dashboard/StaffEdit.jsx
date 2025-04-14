@@ -8,6 +8,8 @@ import {
   FormControlLabel,
   Switch,
   Box,
+  Typography,
+  Chip,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 
@@ -146,9 +148,57 @@ const StaffEdit = ({ open, onClose, onSuccess, staff }) => {
                 checked={editedStaff.onDuty}
                 onChange={handleSwitchChange}
                 name="onDuty"
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#1a237e',
+                    '&:hover': {
+                      backgroundColor: 'rgba(26, 35, 126, 0.08)',
+                    },
+                    '& .MuiSwitch-thumb': {
+                      backgroundColor: '#1a237e',
+                      border: '1px solid #1a237e',
+                    },
+                    '& .MuiSwitch-track': {
+                      backgroundColor: '#1a237e',
+                    },
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    backgroundColor: '#1a237e',
+                  },
+                  '& .MuiSwitch-thumb': {
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #bdbdbd',
+                  },
+                  '& .MuiSwitch-track': {
+                    backgroundColor: '#757575',
+                  },
+                  '&:hover .MuiSwitch-thumb': {
+                    backgroundColor: editedStaff.onDuty ? '#1a237e' : '#f5f5f5',
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 0.5,
+                  },
+                }}
               />
             }
-            label="On Duty"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ color: '#424242', fontWeight: 500 }}>
+                  {editedStaff.onDuty ? "Currently On Duty" : "Currently Off Duty"}
+                </Typography>
+                <Chip 
+                  label={editedStaff.onDuty ? "Active" : "Inactive"} 
+                  size="small"
+                  color={editedStaff.onDuty ? "primary" : "default"}
+                  sx={{ 
+                    backgroundColor: editedStaff.onDuty ? "rgba(26, 35, 126, 0.1)" : "rgba(189, 189, 189, 0.1)",
+                    color: editedStaff.onDuty ? "#1a237e" : "#757575",
+                    fontWeight: 500,
+                    border: editedStaff.onDuty ? "1px solid rgba(26, 35, 126, 0.3)" : "1px solid rgba(189, 189, 189, 0.3)",
+                  }}
+                />
+              </Box>
+            }
           />
         </Box>
       </DialogContent>

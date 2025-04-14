@@ -14,6 +14,7 @@ import {
   PeopleAltOutlined,
   PersonOutlined,
   WavesOutlined,
+  HowToRegOutlined,
 } from "@mui/icons-material";
 import avatar from "../../../assets/images/avatar.png";
 import logo from "../../../assets/images/logo.png";
@@ -47,6 +48,11 @@ const SideBar = () => {
       title: "Add new Staff",
       path: "/form",
       icon: <PersonOutlined />,
+    },
+    {
+      title: "Attendance Management",
+      path: "/attendance",
+      icon: <HowToRegOutlined />,
     },
     {
       title: "Staff Attendence",

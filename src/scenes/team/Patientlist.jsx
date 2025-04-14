@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, Typography, Button, Stack, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip, Paper } from "@mui/material";
-import { Edit, Delete, Warning } from '@mui/icons-material';
+import { Box, Typography, Button, Stack, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip, Paper, TextField, InputAdornment } from "@mui/material";
+import { Edit, Delete, Warning, Search } from '@mui/icons-material';
 import { tokens } from "../../theme";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -19,6 +19,7 @@ const Patientlist = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [activeFilter, setActiveFilter] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
     const [deleteDialog, setDeleteDialog] = React.useState({ open: false, patient: null });
 
     useEffect(() => {
@@ -50,6 +51,26 @@ const Patientlist = () => {
             });
             setFilteredData(filtered);
         }
+    };
+
+    const handleSearch = (event) => {
+        const query = event.target.value.toLowerCase();
+        setSearchQuery(query);
+        
+        let filtered = patientData;
+        if (activeFilter === "ACTIVE") {
+            filtered = filtered.filter(item => item.status === true);
+        } else if (activeFilter === "INACTIVE") {
+            filtered = filtered.filter(item => item.status === false);
+        }
+        
+        if (query) {
+            filtered = filtered.filter(patient => 
+                patient.name.toLowerCase().includes(query)
+            );
+        }
+        
+        setFilteredData(filtered);
     };
 
     const handleEdit = (patient) => {
@@ -431,6 +452,51 @@ const Patientlist = () => {
             >
                 Patient Records
             </Typography>
+
+            {/* Search Box */}
+            <Box 
+                sx={{ 
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    backgroundColor: '#fff',
+                    p: 2,
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                }}
+            >
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Search patient by name..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <Search sx={{ color: '#757575' }} />
+                            </InputAdornment>
+                        ),
+                        sx: {
+                            backgroundColor: '#f8faff',
+                            '&:hover': {
+                                backgroundColor: '#f1f4ff',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#e3f2fd',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#90caf9',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#1a237e',
+                            },
+                            borderRadius: '8px',
+                        }
+                    }}
+                />
+            </Box>
 
             {/* Filter Buttons */}
             <Box 

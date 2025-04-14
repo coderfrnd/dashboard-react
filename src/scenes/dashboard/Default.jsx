@@ -153,7 +153,7 @@ const Default = ({
               p: 3,
               borderRadius: '12px',
               backgroundColor: 'white',
-              height: '400px'
+              height: '500px'
             }}
           >
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -169,7 +169,7 @@ const Default = ({
                 <DownloadOutlined sx={{ fontSize: "26px", color: colors.greenAccent[500] }} />
               </IconButton>
             </Box>
-            <Box height="320px">
+            <Box height="420px">
               <LineChart 
                 data={getLineData()} 
                 isDashboard={true}

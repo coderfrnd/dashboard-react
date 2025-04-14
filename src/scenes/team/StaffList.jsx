@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, TextField, InputAdornment } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SearchIcon from '@mui/icons-material/Search';
 import StaffEdit from "../dashboard/StaffEdit";
 
 const StaffList = () => {
@@ -11,6 +12,7 @@ const StaffList = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [activeFilter, setActiveFilter] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         fetchData();
@@ -36,6 +38,26 @@ const StaffList = () => {
         } else {
             setFilteredData(staffData.filter(staff => staff.status === false));
         }
+    };
+
+    const handleSearch = (event) => {
+        const query = event.target.value.toLowerCase();
+        setSearchQuery(query);
+        
+        let filtered = staffData;
+        if (activeFilter === "Present") {
+            filtered = filtered.filter(staff => staff.status === true);
+        } else if (activeFilter === "Absent") {
+            filtered = filtered.filter(staff => staff.status === false);
+        }
+        
+        if (query) {
+            filtered = filtered.filter(staff => 
+                staff.name.toLowerCase().includes(query)
+            );
+        }
+        
+        setFilteredData(filtered);
     };
 
     const handleEdit = (staff) => {
@@ -189,6 +211,49 @@ const StaffList = () => {
             >
                 Staff Records
             </Typography>
+
+            {/* Search Box */}
+            <Box 
+                sx={{ 
+                    mb: 3,
+                    backgroundColor: '#fff',
+                    p: 2,
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                }}
+            >
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Search staff by name..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon sx={{ color: '#757575' }} />
+                            </InputAdornment>
+                        ),
+                        sx: {
+                            backgroundColor: '#f8faff',
+                            '&:hover': {
+                                backgroundColor: '#f1f4ff',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#e3f2fd',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#90caf9',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#1a237e',
+                            },
+                            borderRadius: '8px',
+                        }
+                    }}
+                />
+            </Box>
+
             <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button
