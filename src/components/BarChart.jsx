@@ -12,7 +12,7 @@ const BarChart = ({
   yAxisLabel = "Value",
 }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const colors = tokens();
 
   return (
     <ResponsiveBar
@@ -27,27 +27,27 @@ const BarChart = ({
         axis: {
           domain: {
             line: {
-              stroke: colors.gray[100],
+              stroke: "#000000",
             },
           },
           legend: {
             text: {
-              fill: colors.gray[100],
+              fill: "#000000",
             },
           },
           ticks: {
             line: {
-              stroke: colors.gray[100],
+              stroke: "#000000",
               strokeWidth: 1,
             },
             text: {
-              fill: colors.gray[100],
+              fill: "#000000",
             },
           },
         },
         legends: {
           text: {
-            fill: colors.gray[100],
+            fill: "#000000",
           },
         },
       }}
@@ -75,6 +75,22 @@ const BarChart = ({
         from: "color",
         modifiers: [["darker", 1.6]],
       }}
+      label={(d) => `${d.value}`}
+      tooltip={({ id, value, color }) => (
+        <div
+          style={{
+            padding: 12,
+            color: "#000000",
+            background: "#ffffff",
+            borderRadius: "4px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+          }}
+        >
+          <strong>
+            {id}: {value}
+          </strong>
+        </div>
+      )}
       legends={[
         {
           dataFrom: "keys",
@@ -99,11 +115,6 @@ const BarChart = ({
           ],
         },
       ]}
-      role="application"
-      ariaLabel="Nivo bar chart"
-      barAriaLabel={(e) =>
-        `${e.id}: ${e.formattedValue} in ${e.indexValue}`
-      }
     />
   );
 };

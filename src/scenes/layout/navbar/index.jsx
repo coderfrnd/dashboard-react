@@ -5,11 +5,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { tokens, ColorModeContext } from "../../../theme";
+import { tokens } from "../../../theme";
 import { useContext } from "react";
 import {
-  DarkModeOutlined,
-  LightModeOutlined,
   MenuOutlined,
   NotificationsOutlined,
   PersonOutlined,
@@ -17,13 +15,14 @@ import {
   SettingsOutlined,
 } from "@mui/icons-material";
 import { ToggledContext } from "../../../App";
+
 const Navbar = () => {
   const theme = useTheme();
-  const colorMode = useContext(ColorModeContext);
   const { toggled, setToggled } = useContext(ToggledContext);
   const isMdDevices = useMediaQuery("(max-width:768px)");
   const isXsDevices = useMediaQuery("(max-width:466px)");
-  const colors = tokens(theme.palette.mode);
+  const colors = tokens();
+
   return (
     <Box
       display="flex"
@@ -53,13 +52,6 @@ const Navbar = () => {
       </Box>
 
       <Box>
-        <IconButton onClick={colorMode.toggleColorMode}>
-          {theme.palette.mode === "dark" ? (
-            <LightModeOutlined />
-          ) : (
-            <DarkModeOutlined />
-          )}
-        </IconButton>
         <IconButton>
           <NotificationsOutlined />
         </IconButton>

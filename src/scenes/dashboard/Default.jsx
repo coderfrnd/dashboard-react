@@ -44,7 +44,7 @@ const TransactionCard = ({ email, amount, status }) => (
     }}
   >
     <Box>
-      <Typography color="#fff" variant="subtitle1">
+      <Typography color="#111" variant="subtitle1">
         {email}
       </Typography>
     </Box>
@@ -191,10 +191,21 @@ const Default = ({
               overflow: 'hidden'
             }}
           >
-            <Typography variant="h6" fontWeight="bold" color="white" mb={3}>
+            <Typography 
+              variant="h4" 
+              fontWeight="bold" 
+              color="#111" 
+              mb={3}
+              sx={{
+                fontSize: '1.5rem',
+                letterSpacing: '0.5px',
+                borderBottom: '2px solid rgba(0,0,0,0.1)',
+                paddingBottom: '10px'
+              }}
+            >
               Recent Transactions
             </Typography>
-            <Box sx={{ overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+            <Box sx={{ overflowY: 'auto', height: 'calc(100% - 80px)' }}>
               {financialData.slice(0, 6).map((transaction, index) => (
                 <TransactionCard
                   key={index}

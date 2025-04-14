@@ -12,6 +12,7 @@ import Pie from "./pie";
 import Stream from "./stream";
 import FAQ from "./staffDetails";
 import Geography from "./geography";
+import Patient from "./patientDetails";
 
 export {
   Navbar,
@@ -28,4 +29,5 @@ export {
   Stream,
   FAQ,
   Geography,
+  Patient,
 };

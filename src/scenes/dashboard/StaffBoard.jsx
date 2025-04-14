@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, CircularProgress } from '@mui/material';
 import { BarChart, PieChart } from '../../components';
 import Staff from '../staffDetails';
 import { ToggledContext } from "../../App";
@@ -46,12 +46,30 @@ const StaffBoard = ({ colors }) => {
       setStaffData(data);
     } catch (error) {
       console.error('Error fetching staff data:', error);
+      // Initialize with empty array on error
+      setStaffData([]);
     }
   };
 
   useEffect(() => {
     fetchStaffData();
   }, []); // Fetch data on component mount
+
+  // If staffData is undefined or null, show loading
+  if (!staffData) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh' 
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   // Count staff per department for bar chart
   const deptCount = staffData.reduce((acc, staff) => {

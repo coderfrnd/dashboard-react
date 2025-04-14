@@ -16,26 +16,40 @@ const Item = ({ title, path, icon, colors }) => {
       rootStyles={{
         color: isActive ? colors.greenAccent[500] : theme.palette.text.primary,
         backgroundColor: isActive 
-          ? (theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)")
+          ? (theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)")
           : "transparent",
-        borderRadius: 1,
-        margin: "4px 8px",
-        padding: "8px 16px",
-        transition: theme.transitions.create(['color', 'background-color', 'transform'], {
+        borderRadius: "12px",
+        margin: "10px 15px",
+        padding: "18px 24px",
+        width: "calc(100% - 30px)",
+        minHeight: "60px",
+        display: "flex",
+        alignItems: "center",
+        transition: theme.transitions.create(['color', 'background-color', 'transform', 'box-shadow'], {
           duration: theme.transitions.duration.short,
         }),
         "&:hover": {
-          backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+          backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
           transform: "translateX(4px)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         },
         "& .pro-icon-wrapper": {
           backgroundColor: isActive ? colors.greenAccent[500] : "transparent",
-          color: isActive ? theme.palette.mode === "dark" ? "#1e1e1e" : "#ffffff" : theme.palette.text.primary,
-          borderRadius: 1,
-          padding: "4px",
-          transition: theme.transitions.create(['background-color', 'color'], {
+          color: isActive ? theme.palette.mode === "dark" ? "#1a1a1a" : "#ffffff" : theme.palette.text.primary,
+          borderRadius: "8px",
+          padding: "12px",
+          marginRight: "16px",
+          minWidth: "40px",
+          minHeight: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: theme.transitions.create(['background-color', 'color', 'transform'], {
             duration: theme.transitions.duration.short,
           }),
+          "&:hover": {
+            transform: "scale(1.1)",
+          }
         },
       }}
     >
@@ -43,7 +57,9 @@ const Item = ({ title, path, icon, colors }) => {
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1.5,
+          gap: 2,
+          width: "100%",
+          minHeight: "40px",
         }}
       >
         <Typography
@@ -51,6 +67,10 @@ const Item = ({ title, path, icon, colors }) => {
           sx={{
             fontWeight: isActive ? 600 : 400,
             letterSpacing: "0.02em",
+            fontSize: "1rem",
+            transition: theme.transitions.create(['font-weight'], {
+              duration: theme.transitions.duration.short,
+            }),
           }}
         >
           {title}
@@ -59,10 +79,16 @@ const Item = ({ title, path, icon, colors }) => {
           <Box
             sx={{
               width: 4,
-              height: 16,
+              height: 24,
               backgroundColor: colors.greenAccent[500],
-              borderRadius: 1,
+              borderRadius: 2,
               marginLeft: "auto",
+              transition: theme.transitions.create(['height'], {
+                duration: theme.transitions.duration.short,
+              }),
+              "&:hover": {
+                height: 32,
+              }
             }}
           />
         )}

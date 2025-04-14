@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
-import { Avatar, Box, IconButton, Typography, useTheme, Tooltip, Paper, Divider } from "@mui/material";
+import { Avatar, Box, IconButton, Typography, useTheme, Tooltip, Paper, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Badge, Chip } from "@mui/material";
 import { useContext, useState } from "react";
 import { tokens } from "../../../theme";
-import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
 import {
   BarChartOutlined,
   CalendarTodayOutlined,
@@ -18,7 +17,7 @@ import {
 } from "@mui/icons-material";
 import avatar from "../../../assets/images/avatar.png";
 import logo from "../../../assets/images/logo.png";
-import Item from "./Item";
+import { Link, useLocation } from "react-router-dom";
 import { ToggledContext } from "../../../App";
 
 const SideBar = () => {
@@ -26,339 +25,295 @@ const SideBar = () => {
   const { toggled, setToggled } = useContext(ToggledContext);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const location = useLocation();
 
-  return (
-    <Sidebar
-      backgroundColor={theme.palette.mode === "dark" ? "#1e1e1e" : "#ffffff"}
-      rootStyles={{
-        border: 0,
-        height: "100%",
-        boxShadow: theme.shadows[4],
-      }}
-      collapsed={collapsed}
-      onBackdropClick={() => setToggled(false)}
-      toggled={toggled}
-      breakPoint="md"
-    >
-      <Menu
-        menuItemStyles={{
-          button: { 
-            ":hover": { 
-              backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-              transition: theme.transitions.create(['background-color'], {
-                duration: theme.transitions.duration.short,
-              }),
-            },
-            "&.active": {
-              backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-            }
-          },
+  const menuItems = [
+    {
+      title: "Dashboard",
+      path: "/",
+      icon: <DashboardOutlined />,
+    },
+    {
+      title: "Patient Data",
+      path: "/patient",
+      icon: <PeopleAltOutlined />,
+    },
+    {
+      title: "Patient History",
+      path: "/patienthistory",
+      icon: <ContactsOutlined />,
+    },
+    {
+      title: "Add new Staff",
+      path: "/form",
+      icon: <PersonOutlined />,
+    },
+    {
+      title: "Staff Attendence",
+      path: "/calendar",
+      icon: <CalendarTodayOutlined />,
+    },
+    {
+      title: "Staff Details",
+      path: "/staffhistory",
+      icon: <HelpOutlineOutlined />,
+    },
+    {
+      title: "Financial Details",
+      path: "/finance",
+      icon: <WavesOutlined />,
+    },
+    {
+      title: "Bar Chart",
+      path: "/bar",
+      icon: <BarChartOutlined />,
+    },
+    {
+      title: "Pie Chart",
+      path: "/pie",
+      icon: <DonutLargeOutlined />,
+    },
+    {
+      title: "Geography Chart",
+      path: "/geography",
+      icon: <MapOutlined />,
+    },
+  ];
+
+  const MenuItem = ({ item }) => {
+    const isActive = item.path === location.pathname;
+    
+    return (
+      <ListItem 
+        disablePadding 
+        sx={{ 
+          mb: 0.5,
+          mx: 1,
         }}
       >
-        <MenuItem
-          rootStyles={{
-            margin: "10px 0 20px 0",
-            color: theme.palette.text.primary,
+        <ListItemButton
+          component={Link}
+          to={item.path}
+          sx={{
+            borderRadius: "12px",
+            py: 1,
+            px: 2,
+            backgroundColor: isActive 
+              ? colors.greenAccent[500] + "20"
+              : "transparent",
+            color: isActive ? colors.greenAccent[500] : "#868dfb",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+              color: colors.greenAccent[500],
+            },
           }}
         >
-          <Box
+          <ListItemIcon
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
+              minWidth: 36,
+              color: "inherit",
+              mr: 1,
             }}
           >
-            {!collapsed && (
-              <Box
-                display="flex"
-                alignItems="center"
-                gap={1.5}
-                sx={{ 
-                  transition: theme.transitions.create(['transform'], {
-                    duration: theme.transitions.duration.short,
-                  }),
-                  "&:hover": {
-                    transform: "scale(1.02)",
-                  }
-                }}
-              >
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 0.5,
-                    borderRadius: 1.25,
-                    backgroundColor: 'transparent',
-                  }}
-                >
-                  <img
-                    style={{ 
-                      width: "35px", 
-                      height: "35px", 
-                      borderRadius: "10px",
-                    }}
-                    src={logo}
-                    alt="Argon"
-                  />
-                </Paper>
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  textTransform="capitalize"
-                  color={colors.greenAccent[500]}
-                  sx={{
-                    textShadow: theme.shadows[1],
-                  }}
-                >
-                  Argon
-                </Typography>
-              </Box>
-            )}
-            <Tooltip title={collapsed ? "Expand Menu" : "Collapse Menu"}>
-              <IconButton 
-                onClick={() => setCollapsed(!collapsed)}
-                sx={{
-                  color: theme.palette.text.primary,
-                  "&:hover": {
-                    color: colors.greenAccent[500],
-                    transform: "rotate(180deg)",
-                    transition: theme.transitions.create(['color', 'transform'], {
-                      duration: theme.transitions.duration.short,
-                    }),
-                  }
-                }}
-              >
-                <MenuOutlined />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </MenuItem>
-      </Menu>
-      {!collapsed && (
-        <Paper
-          elevation={2}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2,
-            mb: 3,
-            p: 2.5,
-            borderRadius: 1.5,
-            background: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
-            mx: 1.25,
-          }}
-        >
-          <Avatar
-            alt="avatar"
-            src={avatar}
-            sx={{ 
-              width: 100, 
-              height: 100,
-              border: `4px solid ${colors.greenAccent[500]}`,
-              boxShadow: theme.shadows[4],
-            }}
-          />
-          <Box sx={{ textAlign: "center" }}>
-            <Typography 
-              variant="h3" 
-              fontWeight="bold" 
-              color={theme.palette.text.primary}
+            {item.icon}
+          </ListItemIcon>
+          {!collapsed && (
+            <ListItemText 
+              primary={item.title} 
               sx={{
-                textShadow: theme.shadows[1],
+                "& .MuiTypography-root": {
+                  fontSize: "0.9rem",
+                  fontWeight: isActive ? 600 : 400,
+                }
               }}
-            >
-              Software Engineer Admin
-            </Typography>
-            <Typography
-              variant="h6"
-              fontWeight="500"
-              color={colors.greenAccent[500]}
-              sx={{
-                mt: 0.5,
-                opacity: 0.8,
-              }}
-            >
-              Administrator
-            </Typography>
-          </Box>
-        </Paper>
-      )}
+            />
+          )}
+        </ListItemButton>
+      </ListItem>
+    );
+  };
 
-      <Box mb={5} pl={collapsed ? undefined : "5%"}>
-        <Menu
-          menuItemStyles={{
-            button: {
-              ":hover": {
-                color: colors.greenAccent[500],
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                transition: theme.transitions.create(['color', 'background-color'], {
-                  duration: theme.transitions.duration.short,
-                }),
-              },
-              "&.active": {
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                color: colors.greenAccent[500],
-              }
-            },
+  return (
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: collapsed ? 80 : 280,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: collapsed ? 80 : 280,
+          backgroundColor: "#1F2A40",
+          transition: "width 0.2s ease-in-out",
+          border: 0,
+          overflowX: 'hidden',
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 2,
+          pb: 3,
+        }}
+      >
+        {!collapsed && (
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+          >
+            <img
+              style={{ 
+                width: "32px", 
+                height: "32px", 
+                borderRadius: "8px",
+              }}
+              src={logo}
+              alt="Argon"
+            />
+            <Typography
+              variant="h5"
+              fontWeight="600"
+              color={colors.greenAccent[500]}
+            >
+              Argon
+            </Typography>
+          </Box>
+        )}
+        <IconButton 
+          onClick={() => setCollapsed(!collapsed)}
+          sx={{
+            color: "#868dfb",
+            p: 1,
           }}
         >
-          <Item
-            title="Dashboard"
-            path="/"
-            colors={colors}
-            icon={<DashboardOutlined />}
-          />
-        </Menu>
-        <Divider sx={{ my: 1, mx: 2 }} />
-        <Typography
-          variant="h6"
-          color={theme.palette.text.secondary}
-          sx={{ 
-            m: "15px 0 5px 20px",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            fontWeight: 600,
-          }}
-        >
-          {!collapsed ? "Patient Data" : " "}
-        </Typography>
-        <Menu
-          menuItemStyles={{
-            button: {
-              ":hover": {
-                color: colors.greenAccent[500],
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                transition: theme.transitions.create(['color', 'background-color'], {
-                  duration: theme.transitions.duration.short,
-                }),
-              },
-              "&.active": {
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                color: colors.greenAccent[500],
-              }
-            },
-          }}
-        >
-          <Item
-            title="Patient Data"
-            path="/patient"
-            colors={colors}
-            icon={<PeopleAltOutlined />}
-          />
-          <Item
-            title="Patient History"
-            path="/patienthistory"
-            colors={colors}
-            icon={<ContactsOutlined />}
-          />
-        </Menu>
-        <Divider sx={{ my: 1, mx: 2 }} />
-        <Typography
-          variant="h6"
-          color={theme.palette.text.secondary}
-          sx={{ 
-            m: "15px 0 5px 20px",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            fontWeight: 600,
-          }}
-        >
-          {!collapsed ? "Staff Data" : " "}
-        </Typography>
-        <Menu
-          menuItemStyles={{
-            button: {
-              ":hover": {
-                color: colors.greenAccent[500],
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                transition: theme.transitions.create(['color', 'background-color'], {
-                  duration: theme.transitions.duration.short,
-                }),
-              },
-              "&.active": {
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                color: colors.greenAccent[500],
-              }
-            },
-          }}
-        >
-          <Item
-            title="Add new Staff "
-            path="/form"
-            colors={colors}
-            icon={<PersonOutlined />}
-          />
-          <Item
-            title="Staff Attendence"
-            path="/calendar"
-            colors={colors}
-            icon={<CalendarTodayOutlined />}
-          />
-          <Item
-            title="Staff Details"
-            path="/staffhistory"
-            colors={colors}
-            icon={<HelpOutlineOutlined />}
-          />
-        </Menu>
-        <Divider sx={{ my: 1, mx: 2 }} />
-        <Typography
-          variant="h6"
-          color={theme.palette.text.secondary}
-          sx={{ 
-            m: "15px 0 5px 20px",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            fontWeight: 600,
-          }}
-        >
-          {!collapsed ? " Financial Charts" : " "}
-        </Typography>
-        <Menu
-          menuItemStyles={{
-            button: {
-              ":hover": {
-                color: colors.greenAccent[500],
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                transition: theme.transitions.create(['color', 'background-color'], {
-                  duration: theme.transitions.duration.short,
-                }),
-              },
-              "&.active": {
-                backgroundColor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                color: colors.greenAccent[500],
-              }
-            },
-          }}
-        >
-           <Item
-            title="Financial Details"
-            path="/finance"
-            colors={colors}
-            icon={<WavesOutlined />}
-          />
-          <Item
-            title="Bar Chart"
-            path="/bar"
-            colors={colors}
-            icon={<BarChartOutlined />}
-          />
-          <Item
-            title="Pie Chart"
-            path="/pie"
-            colors={colors}
-            icon={<DonutLargeOutlined />}
-          />
-          <Item
-            title="Geography Chart"
-            path="/geography"
-            colors={colors}
-            icon={<MapOutlined />}
-          />
-        </Menu>
+          <MenuOutlined />
+        </IconButton>
       </Box>
-    </Sidebar>
+
+      <List sx={{ px: 1, pt: 1 }}>
+        <MenuItem item={menuItems[0]} />
+      </List>
+
+      {!collapsed && (
+        <Typography
+          variant="subtitle2"
+          sx={{ 
+            px: 3,
+            py: 1.5,
+            color: "#868dfb",
+            textTransform: "uppercase",
+            fontSize: "0.7rem",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+            opacity: 0.6,
+          }}
+        >
+          Patient Data
+          <Box
+            component="span"
+            sx={{
+              ml: 1,
+              px: 1,
+              py: 0.25,
+              borderRadius: "4px",
+              backgroundColor: colors.greenAccent[500] + "20",
+              color: colors.greenAccent[500],
+              fontSize: "0.65rem",
+              fontWeight: 700,
+            }}
+          >
+            2
+          </Box>
+        </Typography>
+      )}
+      
+      <List sx={{ px: 1 }}>
+        <MenuItem item={menuItems[1]} />
+        <MenuItem item={menuItems[2]} />
+      </List>
+
+      {!collapsed && (
+        <Typography
+          variant="subtitle2"
+          sx={{ 
+            px: 3,
+            py: 1.5,
+            color: "#868dfb",
+            textTransform: "uppercase",
+            fontSize: "0.7rem",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+            opacity: 0.6,
+          }}
+        >
+          Staff Data
+          <Box
+            component="span"
+            sx={{
+              ml: 1,
+              px: 1,
+              py: 0.25,
+              borderRadius: "4px",
+              backgroundColor: colors.greenAccent[500] + "20",
+              color: colors.greenAccent[500],
+              fontSize: "0.65rem",
+              fontWeight: 700,
+            }}
+          >
+            3
+          </Box>
+        </Typography>
+      )}
+      
+      <List sx={{ px: 1 }}>
+        <MenuItem item={menuItems[3]} />
+        <MenuItem item={menuItems[4]} />
+        <MenuItem item={menuItems[5]} />
+      </List>
+
+      {!collapsed && (
+        <Typography
+          variant="subtitle2"
+          sx={{ 
+            px: 3,
+            py: 1.5,
+            color: "#868dfb",
+            textTransform: "uppercase",
+            fontSize: "0.7rem",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+            opacity: 0.6,
+          }}
+        >
+          Financial Charts
+          <Box
+            component="span"
+            sx={{
+              ml: 1,
+              px: 1,
+              py: 0.25,
+              borderRadius: "4px",
+              backgroundColor: colors.greenAccent[500] + "20",
+              color: colors.greenAccent[500],
+              fontSize: "0.65rem",
+              fontWeight: 700,
+            }}
+          >
+            4
+          </Box>
+        </Typography>
+      )}
+      
+      <List sx={{ px: 1 }}>
+        <MenuItem item={menuItems[6]} />
+        <MenuItem item={menuItems[7]} />
+        <MenuItem item={menuItems[8]} />
+        <MenuItem item={menuItems[9]} />
+      </List>
+    </Drawer>
   );
 };
 

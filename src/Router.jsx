@@ -14,6 +14,7 @@ import {
   Geography,
   Calendar,
   Stream,
+  Patient,
 } from "./scenes";
 
 import ProtectedRoute from "./ProtectedRoutes"; 
@@ -48,7 +49,7 @@ const AppRouter = () => {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="/patient" element={<Team />} />
+          <Route path="/patient" element={<Patient />} />
           <Route path="/patienthistory" element={<Contacts />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/form" element={<Form />} />

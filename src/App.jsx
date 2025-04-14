@@ -1,18 +1,19 @@
 import React, { createContext, useEffect, useState } from "react";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
-import { ColorModeContext, useMode } from "./theme";
+import { useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
 import { Outlet } from "react-router-dom";
 import Invoices from './scenes/invoices';
 
 export const ToggledContext = createContext(null);
+
 function App() {
-  const [theme, colorMode] = useMode();
+  const [theme] = useMode();
   const [toggled, setToggled] = useState(false);
   const [patientData, setPatientData] = useState([]);
-  const [financialData, setfinancialData] = useState([]);
+  const [financialData, setFinancialData] = useState([]);
   const [staffData, setstaffData] = useState([]);
-  const values = { toggled, setToggled };
+
   useEffect(() => {
     (async () => {
       let res = await fetch(
@@ -26,7 +27,7 @@ function App() {
         // `http://localhost:3000/financialDashboard`
       );
       let finData = await finaRes.json();
-      setfinancialData(finData);
+      setFinancialData(finData);
       let staffRes = await fetch(
         `https://dashboard-gb84.onrender.com/staffDashboard`
         // `http://localhost:3000/staffDashboard`
@@ -38,39 +39,38 @@ function App() {
   }, []);
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ToggledContext.Provider
-          value={{
-            values,
-            patientData,
-            setPatientData,
-            financialData,
-            staffData,
-            setstaffData,
-          }}
-        >
-          <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
-            <SideBar />
-            <Box
-              sx={{
-                flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                maxWidth: "100%",
-              }}
-            >
-              <Navbar />
-              <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
-                <Outlet />
-              </Box>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <ToggledContext.Provider
+        value={{
+          toggled,
+          setToggled,
+          patientData,
+          setPatientData,
+          financialData,
+          staffData,
+          setstaffData,
+        }}
+      >
+        <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
+          <SideBar />
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+              maxWidth: "100%",
+            }}
+          >
+            <Navbar />
+            <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
+              <Outlet />
             </Box>
           </Box>
-        </ToggledContext.Provider>
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+        </Box>
+      </ToggledContext.Provider>
+    </ThemeProvider>
   );
 }
 

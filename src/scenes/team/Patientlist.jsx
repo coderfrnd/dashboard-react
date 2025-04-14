@@ -1,386 +1,579 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, Typography, Button, Stack, useTheme, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { Box, Typography, Button, Stack, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip, Paper } from "@mui/material";
 import { Edit, Delete, Warning } from '@mui/icons-material';
 import { tokens } from "../../theme";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FilterListIcon from '@mui/icons-material/FilterList';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import { Header } from "../../components";
+import PatientEdit from "../dashboard/PatientEdit";
 
-const Patientlist = ({ patientData, onEditClick, onDeleteClick }) => {
+const Patientlist = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+    const [patientData, setPatientData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [activeFilter, setActiveFilter] = useState("All");
     const [deleteDialog, setDeleteDialog] = React.useState({ open: false, patient: null });
 
-    const handleDelete = (row) => {
-        setDeleteDialog({ open: true, patient: row });
-    };
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-    const confirmDelete = () => {
-        if (deleteDialog.patient && onDeleteClick) {
-            onDeleteClick(deleteDialog.patient);
+    const fetchData = async () => {
+        try {
+            const response = await fetch("https://dashboard-gb84.onrender.com/patientDashboard");
+            const data = await response.json();
+            setPatientData(data);
+            setFilteredData(data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
         }
-        setDeleteDialog({ open: false, patient: null });
     };
 
-    const cancelDelete = () => {
-        setDeleteDialog({ open: false, patient: null });
+    const handleFilter = (status) => {
+        setActiveFilter(status);
+        if (status === "All") {
+            setFilteredData(patientData);
+        } else {
+            const filtered = patientData.filter((item) => {
+                if (status === "ACTIVE") {
+                    return item.status === true;
+                } else {
+                    return item.status === false;
+                }
+            });
+            setFilteredData(filtered);
+        }
+    };
+
+    const handleEdit = (patient) => {
+        setSelectedPatient(patient);
+        setEditDialogOpen(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this patient record?")) {
+            try {
+                const response = await fetch(
+                    `https://dashboard-gb84.onrender.com/patientDashboard/${id}`,
+                    {
+                        method: "DELETE",
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete record");
+                }
+
+                setFilteredData((prev) => prev.filter((item) => item.id !== id));
+            } catch (error) {
+                console.error("Error deleting record:", error);
+                alert("Failed to delete record");
+            }
+        }
+    };
+
+    const handleEditSuccess = (updatedPatient) => {
+        setFilteredData((prev) =>
+            prev.map((item) =>
+                item.id === updatedPatient.id ? updatedPatient : item
+            )
+        );
+        setEditDialogOpen(false);
+    };
+
+    const getStatusColor = (active) => {
+        const status = active ? 'ACTIVE' : 'INACTIVE';
+        switch (status) {
+            case 'ACTIVE':
+                return {
+                    bg: '#4CAF50',
+                    hover: '#45a849',
+                    light: '#e8f5e9'
+                };
+            case 'INACTIVE':
+                return {
+                    bg: '#f44336',
+                    hover: '#e53935',
+                    light: '#ffebee'
+                };
+            default:
+                return {
+                    bg: '#757575',
+                    hover: '#616161',
+                    light: '#eeeeee'
+                };
+        }
+    };
+
+    const getStatusIcon = (active) => {
+        const status = active ? 'ACTIVE' : 'INACTIVE';
+        switch (status) {
+            case 'ACTIVE':
+                return <CheckCircleIcon sx={{ color: active ? "#4CAF50" : "#ffffff", mr: 1 }} />;
+            case 'INACTIVE':
+                return <CancelIcon sx={{ color: active ? "#ffffff" : "#f44336", mr: 1 }} />;
+            default:
+                return null;
+        }
     };
 
     const columns = [
         { 
-          field: "id", 
-          headerName: "ID", 
-          flex: 0.5,
-          headerAlign: "center",
-          align: "center",
-        },
-        {
-          field: "name",
-          headerName: "Name",
-          flex: 1,
-          cellClassName: "name-column--cell",
-          renderCell: ({ value }) => (
-            <Typography
-              sx={{
-                fontWeight: "700",
-                fontSize: "14px",
-                color: theme.palette.mode === "dark" 
-                  ? colors.blueAccent[100]
-                  : colors.blueAccent[900],
-                letterSpacing: "0.02em",
-                textShadow: theme.palette.mode === "dark" 
-                  ? "0 0 1px rgba(255,255,255,0.2)"
-                  : "none",
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  color: theme.palette.mode === "dark" 
-                    ? colors.blueAccent[50] 
-                    : colors.blueAccent[800],
-                  transform: "scale(1.02)",
-                }
-              }}
-            >
-              {value}
-            </Typography>
-          ),
-        },
-        {
-          field: "age",
-          headerName: "Age",
-          type: "number",
-          headerAlign: "center",
-          align: "center",
-          width: 80,
-        },
-        {
-          field: "bloodGroup",
-          headerName: "Blood Group",
-          flex: 0.8,
-          headerAlign: "center",
-          align: "center",
-          cellClassName: "blood-group-cell",
-        },
-        {
-          field: "allergies",
-          headerName: "Allergies",
-          flex: 1,
-          renderCell: ({ value }) => (
-            <Typography
-              sx={{
-                color: value === "None" ? 
-                  theme.palette.mode === "dark" ? colors.greenAccent[800] : colors.greenAccent[700] 
-                  : theme.palette.mode === "dark" ? colors.redAccent[800] : colors.redAccent[700]
-              }}
-            >
-              {value}
-            </Typography>
-          ),
-        },
-        {
-          field: "chronicConditions",
-          headerName: "Chronic Conditions",
-          flex: 1.2,
-          renderCell: ({ value }) => (
-            <Typography
-              sx={{
-                color: value === "None" ? 
-                  theme.palette.mode === "dark" ? colors.greenAccent[500] : colors.greenAccent[700] 
-                  : theme.palette.mode === "dark" ? colors.redAccent[500] : colors.redAccent[700]
-              }}
-            >
-              {value}
-            </Typography>
-          ),
-        },
-        {
-          field: "lastVisit",
-          headerName: "Last Visit",
-          flex: 1,
-          headerAlign: "center",
-          align: "center",
-          renderCell: ({ value }) => (
-            <Box
-              sx={{
-                backgroundColor: theme.palette.mode === "dark" ? colors.primary[600] : colors.gray[100],
-                p: "5px 10px",
-                borderRadius: "4px",
-                display: "inline-block"
-              }}
-            >
-              {value}
-            </Box>
-          ),
-        },
-        {
-          field: "status",
-          headerName: "Status",
-          flex: 0.8,
-          headerAlign: "center",
-          align: "center",
-          renderCell: ({ row: { status } }) => {
-            return (
-              <Box
-                width="100px"
-                m="0 auto"
-                p="5px"
-                display="flex"
-                justifyContent="center"
-                backgroundColor={
-                  status ? colors.greenAccent[600] : colors.redAccent[500]
-                }
-                borderRadius="4px"
-                sx={{
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.15)',
-                    backgroundColor: status ? colors.greenAccent[500] : colors.redAccent[600],
-                  }
-                }}
-              >
-                <Typography color="#ffffff" sx={{ ml: "5px", fontSize: "13px", fontWeight: "600" }}>
-                  {status ? "ACTIVE" : "INACTIVE"}
+            field: "id", 
+            headerName: "ID", 
+            flex: 0.5,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    ID
                 </Typography>
-              </Box>
-            );
-          },
+            ),
         },
         {
-          field: "actions",
-          headerName: "Actions",
-          flex: 1,
-          headerAlign: "center",
-          align: "center",
-          renderCell: ({ row }) => {
-            return (
-              <Stack direction="row" spacing={1}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => onEditClick(row)}
-                  startIcon={<Edit />}
-                  sx={{
-                    minWidth: '32px',
-                    height: '32px',
-                    backgroundColor: colors.greenAccent[600],
-                    fontSize: '13px',
-                    fontWeight: "500",
-                    color: '#ffffff',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: colors.greenAccent[500],
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      backgroundColor: colors.greenAccent[700],
-                    },
-                  }}
+            field: "name",
+            headerName: "Name",
+            flex: 1.2,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
                 >
-                  Edit
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleDelete(row)}
-                  startIcon={<Delete />}
-                  sx={{
-                    minWidth: '32px',
-                    height: '32px',
-                    backgroundColor: colors.redAccent[500],
-                    fontSize: '13px',
-                    fontWeight: "500",
-                    color: '#ffffff',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: colors.redAccent[600],
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      backgroundColor: colors.redAccent[700],
-                    },
-                  }}
+                    Name
+                </Typography>
+            ),
+            renderCell: (params) => (
+                <Typography 
+                    sx={{ 
+                        fontWeight: 500,
+                        color: '#2c387e',
+                        fontSize: '13.5px'
+                    }}
                 >
-                  Delete
-                </Button>
-              </Stack>
-            );
-          },
+                    {params.value}
+                </Typography>
+            ),
         },
-      ];
-  
-    return (
-      <>
-        <Box
-          height="75vh"
-          sx={{
-            "& .MuiDataGrid-root": {
-              border: "none",
-              backgroundColor: theme.palette.mode === "dark" ? colors.primary[400] : "white",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px 0 rgba(0,0,0,0.05)",
-              transition: "all 0.2s ease-in-out",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: `1px solid ${theme.palette.mode === "dark" ? colors.primary[500] : colors.gray[200]}`,
-              color: theme.palette.mode === "dark" ? colors.gray[100] : colors.gray[900],
-              fontSize: "13px",
-              padding: "12px",
-            },
-            "& .name-column--cell": {
-              // Remove or comment out this style since we're using renderCell
-              color: theme.palette.mode === "dark" ? colors.greenAccent[300] : colors.greenAccent[700],
-              fontWeight: "600",
-            },
-            "& .blood-group-cell": {
-              color: theme.palette.mode === "dark" ? colors.blueAccent[300] : colors.blueAccent[700],
-              fontWeight: "500",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: theme.palette.mode === "dark" ? colors.primary[500] : colors.gray[50],
-              borderBottom: `2px solid ${theme.palette.mode === "dark" ? colors.primary[500] : colors.gray[200]}`,
-              color: theme.palette.mode === "dark" ? colors.gray[100] : colors.gray[900],
-              fontWeight: "600",
-              fontSize: "14px",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              backgroundColor: theme.palette.mode === "dark" ? colors.primary[400] : "white",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: `1px solid ${theme.palette.mode === "dark" ? colors.primary[500] : colors.gray[200]}`,
-              backgroundColor: theme.palette.mode === "dark" ? colors.primary[400] : "white",
-              "& .MuiTablePagination-root": {
-                color: theme.palette.mode === "dark" ? colors.gray[100] : colors.gray[900],
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
-                color: theme.palette.mode === "dark" ? colors.gray[100] : colors.gray[900],
-              }
-            },
-            "& .MuiCheckbox-root": {
-              color: theme.palette.mode === "dark" ? colors.greenAccent[400] : colors.greenAccent[600],
-            },
-            "& .MuiDataGrid-row": {
-              "&:hover": {
-                backgroundColor: theme.palette.mode === "dark" ? colors.primary[500] : colors.gray[50],
-              },
-              "&.Mui-selected": {
-                backgroundColor: theme.palette.mode === "dark" ? `${colors.primary[500]}80` : `${colors.gray[100]}80`,
-                "&:hover": {
-                  backgroundColor: theme.palette.mode === "dark" ? `${colors.primary[500]}a0` : `${colors.gray[100]}a0`,
-                },
-              },
-            },
-            "& .MuiDataGrid-toolbarContainer": {
-              padding: "8px",
-              backgroundColor: theme.palette.mode === "dark" ? colors.primary[400] : "white",
-              "& .MuiButton-root": {
-                color: theme.palette.mode === "dark" ? colors.gray[100] : colors.gray[900],
-              },
-            },
-          }}
-        >
-          <DataGrid
-            rows={patientData}
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-            pageSizeOptions={[5, 10, 15, 20]}
-            checkboxSelection
-            disableRowSelectionOnClick
-            getRowHeight={() => 'auto'}
-            sx={{
-              '& .MuiDataGrid-cell': {
-                py: 1,
-              },
-            }}
-          />
-        </Box>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog 
-          open={deleteDialog.open} 
-          onClose={cancelDelete}
-          PaperProps={{
-            sx: {
-              borderRadius: '12px',
-              boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+        {
+            field: "age",
+            headerName: "Age",
+            flex: 0.8,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Age
+                </Typography>
+            ),
+        },
+        {
+            field: "bloodGroup",
+            headerName: "Blood Group",
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Blood Group
+                </Typography>
+            ),
+            renderCell: (params) => (
+                <Box
+                    sx={{
+                        backgroundColor: '#ffebee',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: '4px',
+                        border: '1px solid #ffcdd2'
+                    }}
+                >
+                    <Typography 
+                        sx={{ 
+                            fontWeight: 600,
+                            color: '#c62828',
+                            fontSize: '13px'
+                        }}
+                    >
+                        {params.value}
+                    </Typography>
+                </Box>
+            ),
+        },
+        {
+            field: "allergies",
+            headerName: "Allergies",
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Allergies
+                </Typography>
+            ),
+            renderCell: (params) => (
+                <Typography 
+                    sx={{ 
+                        color: params.value === 'None' ? '#757575' : '#d32f2f',
+                        fontWeight: params.value === 'None' ? 400 : 500,
+                        fontSize: '13px'
+                    }}
+                >
+                    {params.value}
+                </Typography>
+            ),
+        },
+        {
+            field: "chronicConditions",
+            headerName: "Chronic Conditions",
+            flex: 1.2,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Chronic Conditions
+                </Typography>
+            ),
+            renderCell: (params) => (
+                <Typography 
+                    sx={{ 
+                        color: params.value === 'None' ? '#757575' : '#d32f2f',
+                        fontWeight: params.value === 'None' ? 400 : 500,
+                        fontSize: '13px'
+                    }}
+                >
+                    {params.value}
+                </Typography>
+            ),
+        },
+        {
+            field: "lastVisit",
+            headerName: "Last Visit",
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            renderHeader: () => (
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontWeight: 600,
+                        color: '#1a237e',
+                        letterSpacing: '0.5px',
+                        fontSize: '13px'
+                    }}
+                >
+                    Last Visit
+                </Typography>
+            ),
+            renderCell: (params) => (
+                <Box
+                    sx={{
+                        backgroundColor: '#e3f2fd',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: '4px',
+                        border: '1px solid #90caf9'
+                    }}
+                >
+                    <Typography 
+                        sx={{ 
+                            color: '#1565c0',
+                            fontSize: '13px',
+                            fontWeight: 500
+                        }}
+                    >
+                        {params.value}
+                    </Typography>
+                </Box>
+            ),
+        },
+        {
+            field: "status",
+            headerName: "Status",
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => {
+                const isActive = params.row.status === true;
+                return (
+                    <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                            backgroundColor: isActive ? '#4CAF50' : '#f44336',
+                            color: '#ffffff',
+                            '&:hover': {
+                                backgroundColor: isActive ? '#45a849' : '#d32f2f',
+                            },
+                            minWidth: '100px',
+                            borderRadius: '20px',
+                            textTransform: 'none',
+                            fontSize: '13px',
+                            fontWeight: 500
+                        }}
+                        startIcon={isActive ? 
+                            <CheckCircleIcon sx={{ fontSize: '16px' }} /> : 
+                            <CancelIcon sx={{ fontSize: '16px' }} />
+                        }
+                    >
+                        {isActive ? "Active" : "Inactive"}
+                    </Button>
+                );
             }
-          }}
-        >
-          <DialogTitle sx={{ 
-            bgcolor: colors.redAccent[500], 
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            py: 2
-          }}>
-            <Warning /> Confirm Delete
-          </DialogTitle>
-          <DialogContent sx={{ mt: 2, minWidth: '400px' }}>
-            <Typography variant="body1" color={theme.palette.mode === "dark" ? "white" : "text.primary"}>
-              Are you sure you want to delete patient{' '}
-              <Box component="span" sx={{ fontWeight: 600, color: colors.redAccent[500] }}>
-                {deleteDialog.patient?.name}
-              </Box>
-              ? This action cannot be undone.
+        },
+        {
+            field: "actions",
+            headerName: "Actions",
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => (
+                <Box display="flex" gap={1} justifyContent="center" width="100%">
+                    <Tooltip title="Edit">
+                        <IconButton
+                            onClick={() => handleEdit(params.row)}
+                            sx={{ 
+                                backgroundColor: '#2196F3',
+                                '&:hover': {
+                                    backgroundColor: '#1976D2',
+                                },
+                                width: '32px',
+                                height: '32px',
+                            }}
+                        >
+                            <EditIcon sx={{ color: '#fff', fontSize: '18px' }} />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                        <IconButton
+                            onClick={() => handleDelete(params.row.id)}
+                            sx={{ 
+                                backgroundColor: '#f44336',
+                                '&:hover': {
+                                    backgroundColor: '#d32f2f',
+                                },
+                                width: '32px',
+                                height: '32px',
+                            }}
+                        >
+                            <DeleteIcon sx={{ color: '#fff', fontSize: '18px' }} />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            ),
+        },
+    ];
+
+    return (
+        <Box m="20px">
+            <Typography 
+                variant="h4" 
+                sx={{ 
+                    mb: 3,
+                    color: '#1a237e',
+                    fontWeight: 'bold',
+                    borderBottom: '2px solid #e3f2fd',
+                    pb: 1
+                }}
+            >
+                Patient Records
             </Typography>
-          </DialogContent>
-          <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button 
-              onClick={cancelDelete}
-              sx={{
-                color: theme.palette.mode === "dark" ? "white" : "text.primary",
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' },
-              }}
+
+            {/* Filter Buttons */}
+            <Box 
+                sx={{ 
+                    mt: 2, 
+                    mb: 3, 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    flexWrap: 'wrap',
+                    backgroundColor: '#fff',
+                    p: 2,
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                }}
             >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmDelete}
-              variant="contained"
-              sx={{
-                bgcolor: colors.redAccent[500],
-                color: 'white',
-                '&:hover': {
-                  bgcolor: colors.redAccent[600],
-                },
-              }}
+                <Box display="flex" alignItems="center">
+                    <FilterListIcon sx={{ color: '#757575', mr: 1 }} />
+                    <Typography color="#424242" fontWeight="500">
+                        Filter:
+                    </Typography>
+                </Box>
+                <Box display="flex" gap="10px" flexWrap="wrap">
+                    <Button 
+                        variant={activeFilter === "All" ? "contained" : "outlined"}
+                        onClick={() => handleFilter("All")}
+                        sx={{ 
+                            backgroundColor: activeFilter === "All" ? '#2196F3' : 'transparent',
+                            color: activeFilter === "All" ? '#fff' : '#2196F3',
+                            border: '1px solid #2196F3',
+                            '&:hover': {
+                                backgroundColor: activeFilter === "All" ? '#1976D2' : 'rgba(33, 150, 243, 0.08)',
+                            },
+                            textTransform: 'none',
+                            borderRadius: '8px',
+                            px: 3,
+                        }}
+                    >
+                        All
+                    </Button>
+                    <Button 
+                        variant={activeFilter === "ACTIVE" ? "contained" : "outlined"}
+                        onClick={() => handleFilter("ACTIVE")}
+                        sx={{ 
+                            backgroundColor: activeFilter === "ACTIVE" ? '#4CAF50' : 'transparent',
+                            color: activeFilter === "ACTIVE" ? '#fff' : '#4CAF50',
+                            border: '1px solid #4CAF50',
+                            '&:hover': {
+                                backgroundColor: activeFilter === "ACTIVE" ? '#388E3C' : 'rgba(76, 175, 80, 0.08)',
+                            },
+                            textTransform: 'none',
+                            borderRadius: '8px',
+                            px: 3,
+                        }}
+                    >
+                        Active
+                    </Button>
+                    <Button 
+                        variant={activeFilter === "INACTIVE" ? "contained" : "outlined"}
+                        onClick={() => handleFilter("INACTIVE")}
+                        sx={{ 
+                            backgroundColor: activeFilter === "INACTIVE" ? '#f44336' : 'transparent',
+                            color: activeFilter === "INACTIVE" ? '#fff' : '#f44336',
+                            border: '1px solid #f44336',
+                            '&:hover': {
+                                backgroundColor: activeFilter === "INACTIVE" ? '#d32f2f' : 'rgba(244, 67, 54, 0.08)',
+                            },
+                            textTransform: 'none',
+                            borderRadius: '8px',
+                            px: 3,
+                        }}
+                    >
+                        Inactive
+                    </Button>
+                </Box>
+            </Box>
+
+            {/* DataGrid */}
+            <Paper
+                elevation={0}
+                sx={{ 
+                    height: "75vh",
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    p: 3,
+                    '& .MuiDataGrid-root': {
+                        border: 'none',
+                    },
+                }}
             >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+                <DataGrid
+                    rows={filteredData}
+                    columns={columns}
+                    initialState={{
+                        pagination: { paginationModel: { pageSize: 10 } },
+                    }}
+                    pageSizeOptions={[10]}
+                    checkboxSelection
+                    sx={{
+                        border: 'none',
+                        '& .MuiDataGrid-cell': {
+                            borderBottom: '1px solid #f5f5f5',
+                            py: 2
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                            backgroundColor: '#f8faff',
+                            borderBottom: '2px solid #e3f2fd',
+                            color: '#1a237e',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            py: 1
+                        },
+                        '& .MuiDataGrid-row': {
+                            color: '#424242',
+                            fontSize: '14px',
+                            '&:hover': {
+                                backgroundColor: '#f8faff',
+                            },
+                        },
+                        '& .MuiDataGrid-footerContainer': {
+                            borderTop: 'none',
+                            backgroundColor: '#fff',
+                            py: 1
+                        },
+                        '& .MuiCheckbox-root': {
+                            color: '#1a237e',
+                        },
+                        '& .MuiDataGrid-cellContent': {
+                            color: '#424242',
+                            py: 1
+                        },
+                    }}
+                />
+            </Paper>
+            
+            <PatientEdit
+                open={editDialogOpen}
+                onClose={() => setEditDialogOpen(false)}
+                onSuccess={handleEditSuccess}
+                patient={selectedPatient}
+            />
+        </Box>
     );
 }
 

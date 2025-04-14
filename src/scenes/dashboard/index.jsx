@@ -3,6 +3,9 @@ import {
   Button,
   useMediaQuery,
   useTheme,
+  Menu,
+  MenuItem,
+  Typography,
 } from "@mui/material";
 import {
   Header,
@@ -15,6 +18,7 @@ import Default from "./Default";
 import PatientBoard from "./PatientBoard";
 import FinancialBoard from "./FinancialBoard";
 import StaffBoard from "./StaffBoard";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 function Dashboard() {
   const theme = useTheme();
@@ -24,46 +28,41 @@ function Dashboard() {
   const [calculateAppoinment, setcalculateAppoinment] = useState(0);
   const [activeBoard, setactiveBoard] = useState('default');
   const [openModal, setOpenModal] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const { patientData, setPatientData, financialData, staffData } = useContext(ToggledContext);
 
-  const boardButtons = [
+  const boardOptions = [
     {
       id: 'default',
       label: "Default Board",
-      hoverColor: colors.blueAccent[800],
-      onClick: () => {
-        console.log('Switching to default board');
-        setactiveBoard('default');
-      },
     },
     {
       id: 'patient',
       label: "Patient Board",
-      hoverColor: colors.blueAccent[800],
-      onClick: () => {
-        console.log('Switching to patient board');
-        setactiveBoard('patient');
-      },
     },
     {
       id: 'finance',
       label: "Financial Board",
-      hoverColor: colors.blueAccent[800],
-      onClick: () => {
-        console.log('Switching to finance board');
-        setactiveBoard('finance');
-      },
     },
     {
       id: 'staff',
       label: "Staff Board",
-      hoverColor: colors.blueAccent[800],
-      onClick: () => {
-        console.log('Switching to staff board');
-        setactiveBoard('staff');
-      },
     },
   ];
+
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleBoardSelect = (boardId) => {
+    console.log(`Switching to ${boardId} board`);
+    setactiveBoard(boardId);
+    handleMenuClose();
+  };
     
   useEffect(() => {
     if (patientData.length > 0) {
@@ -81,6 +80,9 @@ function Dashboard() {
     console.log('Financial Data:', financialData);
     console.log('Staff Data:', staffData);
   }, [activeBoard, patientData, financialData, staffData]);
+
+  // Get the label of the active board
+  const activeBoardLabel = boardOptions.find(option => option.id === activeBoard)?.label || "Select Board";
 
   return (
     <Box m="20px">
@@ -110,30 +112,77 @@ function Dashboard() {
         )}
       </Box>
 
-      {/* Board Selection Buttons */}
-      <Box display="flex" gap={2} mb={3}>
-        {boardButtons.map((btn, index) => (
-          <Button
-            key={index}
-            variant="contained"
-            sx={{
-              bgcolor: (activeBoard === btn.id) ? colors.blueAccent[800] : colors.greenAccent[700],
-              color: "#fff",
-              fontSize: isMdDevices ? "14px" : "10px",
-              fontWeight: "bold",
-              p: "10px 20px",
-              mt: "18px",
-              width: "200px",
-              transition: ".3s ease",
-              ":hover": {
-                bgcolor: btn.hoverColor,
-              },
-            }}
-            onClick={btn.onClick}
-          >
-            {btn.label}
-          </Button>
-        ))}
+      {/* Board Selection Dropdown */}
+      <Box 
+        mb={3} 
+
+        sx={{
+          ml: "18px",
+          display: "flex",
+          alignItems: "center",
+          position: "relative"
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={handleMenuClick}
+          endIcon={<KeyboardArrowDownIcon />}
+          sx={{
+            bgcolor: colors.blueAccent[800],
+            color: "#fff",
+            fontSize: isMdDevices ? "14px" : "10px",
+            fontWeight: "bold",
+            p: "10px 20px",
+            // mt: "10px",
+            minWidth: "200px",
+            justifyContent: "space-between",
+            transition: ".3s ease",
+            ":hover": {
+              bgcolor: colors.blueAccent[900],
+            },
+          }}
+        >
+          {activeBoardLabel}
+        </Button>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: "200px",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+            }
+          }}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+        >
+          {boardOptions.map((option) => (
+            <MenuItem 
+              key={option.id}
+              onClick={() => handleBoardSelect(option.id)}
+              selected={activeBoard === option.id}
+              sx={{
+                fontWeight: activeBoard === option.id ? "bold" : "normal",
+                color: activeBoard === option.id ? colors.blueAccent[800] : "#000000",
+                "&:hover": {
+                  backgroundColor: colors.blueAccent[100],
+                },
+                py: 1.5,
+                px: 2,
+              }}
+            >
+              {option.label}
+            </MenuItem>
+          ))}
+        </Menu>
       </Box>
 
       {/* Board Content */}

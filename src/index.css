@@ -11,20 +11,28 @@ body,
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #e0e0e0;
+  background: transparent;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: rgba(128, 128, 128, 0.5);
+  border-radius: 4px;
 }
 
 /* Handle on hover */
-::-webkit-scrollbar-track:hover {
-  background: #555;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.7);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
 }

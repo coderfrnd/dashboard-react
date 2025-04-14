@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material";
 
 const PieChart = ({ data, isDashboard = false }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const colors = tokens();
 
   return (
     <ResponsivePie
@@ -14,27 +14,27 @@ const PieChart = ({ data, isDashboard = false }) => {
         axis: {
           domain: {
             line: {
-              stroke: colors.gray[100],
+              stroke: "#000000",
             },
           },
           legend: {
             text: {
-              fill: colors.gray[100],
+              fill: "#000000",
             },
           },
           ticks: {
             line: {
-              stroke: colors.gray[100],
+              stroke: "#000000",
               strokeWidth: 1,
             },
             text: {
-              fill: colors.gray[100],
+              fill: "#000000",
             },
           },
         },
         legends: {
           text: {
-            fill: colors.gray[100],
+            fill: "#000000",
           },
         },
       }}
@@ -58,31 +58,21 @@ const PieChart = ({ data, isDashboard = false }) => {
         modifiers: [["darker", 2]],
       }}
       colors={{ scheme: "category10" }}
-      legends={[
-        {
-          anchor: "bottom",
-          direction: "row",
-          justify: false,
-          translateX: 0,
-          translateY: 56,
-          itemsSpacing: 0,
-          itemWidth: 100,
-          itemHeight: 18,
-          itemTextColor: "#000",
-          itemDirection: "left-to-right",
-          itemOpacity: 1,
-          symbolSize: 18,
-          symbolShape: "circle",
-          effects: [
-            {
-              on: "hover",
-              style: {
-                itemTextColor: "#000",
-              },
-            },
-          ],
-        },
-      ]}
+      tooltip={({ datum }) => (
+        <div
+          style={{
+            padding: 12,
+            color: "#000000",
+            background: "#ffffff",
+            borderRadius: "4px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+          }}
+        >
+          <strong>
+            {datum.id}: {datum.value}
+          </strong>
+        </div>
+      )}
     />
   );
 };
