@@ -145,7 +145,22 @@ const PatientEdit = ({ open, onClose, onSuccess, patient }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained" 
+          sx={{
+            backgroundColor: '#1a237e',
+            color: '#ffffff',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: '#0d1757',
+            },
+            '&:disabled': {
+              backgroundColor: 'rgba(26, 35, 126, 0.5)',
+              color: 'rgba(255, 255, 255, 0.7)',
+            }
+          }}
+        >
           Save Changes
         </Button>
       </DialogActions>

@@ -1,3 +1,4 @@
+import React, { useContext, useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -21,11 +22,19 @@ import {
   Chip,
   InputAdornment,
   CircularProgress,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  CardHeader,
+  Tabs,
+  Tab,
+  Badge,
 } from "@mui/material";
 import { Header } from "../../components";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { useContext, useState } from "react";
 import { ToggledContext } from "../../App";
 import { 
   Help as HelpIcon, 
@@ -42,7 +51,13 @@ import {
   Cancel as CancelIcon,
   Add as AddIcon,
   Refresh as RefreshIcon,
+  Info as InfoIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 const departments = [
   "Cardiology",
@@ -179,22 +194,703 @@ const checkoutSchema = yup.object().shape({
   address: yup.string().required("Address is required"),
   employmentType: yup.string().required("Employment type is required"),
   qualification: yup.string().required("Qualification is required"),
-  specialization: yup.string().when("position", {
+  specialization: yup.string().when('position', {
     is: (val) => ["Doctor", "Nurse", "Technician"].includes(val),
-    then: yup.string().required("Specialization is required for this position"),
-    otherwise: yup.string(),
+    then: () => yup.string().required("Specialization is required for this position"),
+    otherwise: () => yup.string().nullable()
   }),
 });
+
+const fieldHints = {
+  name: "Enter full name as per official documents",
+  email: "Enter a valid email address (e.g., john.doe@example.com)",
+  phone: "Enter a valid phone number with country code",
+  department: "Select the department where staff will work",
+  position: "Select the staff member's role",
+  shift: "Select the working shift",
+  salary: "Enter annual salary in numbers only",
+  joiningDate: "Select the date when staff will join",
+  emergencyContact: "Enter emergency contact number",
+  address: "Enter complete residential address",
+  employmentType: "Select the type of employment",
+  qualification: "Select highest qualification achieved",
+  specialization: "Enter specialization if applicable",
+};
+
+const CustomTextField = ({ 
+  name, 
+  label, 
+  type = "text", 
+  select = false, 
+  multiline = false, 
+  rows = 1,
+  options = [],
+  startIcon,
+  handleBlur,
+  handleChange,
+  values,
+  touched,
+  errors,
+  focusedField,
+  setFocusedField,
+  showHints,
+  setShowHints,
+  getFieldHint
+}) => {
+  return (
+    <Box sx={{ position: 'relative', mb: 2 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        type={type}
+        label={label}
+        onBlur={(e) => {
+          handleBlur(e);
+          setFocusedField(null);
+          setTimeout(() => {
+            setShowHints(prev => ({ ...prev, [name]: false }));
+          }, 200);
+        }}
+        onFocus={() => {
+          setFocusedField(name);
+          setShowHints(prev => ({ ...prev, [name]: true }));
+        }}
+        onChange={handleChange}
+        value={values[name]}
+        name={name}
+        select={select}
+        multiline={multiline}
+        rows={rows}
+        error={!!touched[name] && !!errors[name]}
+        helperText={touched[name] && errors[name]}
+        InputProps={{
+          startAdornment: startIcon && (
+            <InputAdornment position="start">
+              {startIcon}
+            </InputAdornment>
+          )
+        }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "8px",
+            transition: "all 0.3s ease",
+            "& fieldset": {
+              borderColor: "#bdbdbd",
+              borderWidth: "1px"
+            },
+            "&:hover fieldset": {
+              borderColor: "#757575",
+              borderWidth: "1.5px"
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#1a237e",
+              borderWidth: "1.5px"
+            }
+          },
+          "& .MuiInputLabel-root": {
+            color: "#424242",
+            fontSize: '0.9rem',
+            "&.Mui-focused": {
+              color: "#1a237e"
+            }
+          },
+          "& .MuiInputBase-input": {
+            color: "#212121",
+            fontSize: '0.9rem',
+            py: 1.2
+          },
+          "& .MuiFormHelperText-root": {
+            fontSize: '0.75rem'
+          },
+          transition: "all 0.3s ease",
+          transform: focusedField === name ? "translateY(-2px)" : "none",
+          boxShadow: focusedField === name ? "0 4px 12px rgba(26, 35, 126, 0.15)" : "none"
+        }}
+      >
+        {select && options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </TextField>
+      {showHints[name] && (
+        <Fade in={true}>
+          <Typography
+            variant="caption"
+            sx={{
+              position: "absolute",
+              bottom: -24,
+              left: 0,
+              color: "#666",
+              fontSize: "0.75rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5
+            }}
+          >
+            <InfoIcon sx={{ fontSize: "0.9rem" }} />
+            {getFieldHint(name)}
+          </Typography>
+        </Fade>
+      )}
+    </Box>
+  );
+};
+
+const SectionHeader = ({ icon, title, subtitle }) => (
+  <Box sx={{ 
+    display: "flex", 
+    alignItems: "center", 
+    gap: 1, 
+    mb: 3,
+    backgroundColor: 'rgba(26, 35, 126, 0.04)',
+    p: 2,
+    borderRadius: '8px',
+    borderLeft: '4px solid #1a237e'
+  }}>
+    <Avatar 
+      sx={{ 
+        bgcolor: "#1a237e",
+        width: 40,
+        height: 40,
+        boxShadow: "0 4px 8px rgba(26, 35, 126, 0.3)"
+      }}
+    >
+      {icon}
+    </Avatar>
+    <Box>
+      <Typography
+        variant="h6"
+        sx={{
+          color: "#1a237e",
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          gap: 1
+        }}
+      >
+        {title}
+      </Typography>
+      {subtitle && (
+        <Typography variant="body2" color="text.secondary">
+          {subtitle}
+        </Typography>
+      )}
+    </Box>
+  </Box>
+);
+
+const BasicInfoSection = ({ 
+  values, 
+  handleBlur, 
+  handleChange, 
+  touched, 
+  errors,
+  focusedField,
+  setFocusedField,
+  showHints,
+  setShowHints,
+  getFieldHint
+}) => {
+  return (
+    <Box>
+      <SectionHeader 
+        icon={<PersonIcon />} 
+        title="Basic Information" 
+        subtitle="Enter staff's basic details"
+      />
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="name"
+            label="Full Name"
+            startIcon={<PersonIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="department"
+            label="Department"
+            select={true}
+            options={departments}
+            startIcon={<WorkIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="position"
+            label="Position"
+            select={true}
+            options={positions}
+            startIcon={<WorkIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="shift"
+            label="Shift"
+            select={true}
+            options={shifts}
+            startIcon={<CalendarIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12}>
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={values.onDuty} 
+                onChange={handleChange} 
+                name="onDuty"
+                color="primary"
+              />
+            }
+            label="Currently on duty"
+            sx={{ 
+              mt: 1,
+              '& .MuiFormControlLabel-label': {
+                fontSize: '0.9rem',
+                color: '#424242'
+              }
+            }}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+const ContactInfoSection = ({ 
+  values, 
+  handleBlur, 
+  handleChange, 
+  touched, 
+  errors,
+  focusedField,
+  setFocusedField,
+  showHints,
+  setShowHints,
+  getFieldHint
+}) => {
+  return (
+    <Box>
+      <SectionHeader 
+        icon={<EmailIcon />} 
+        title="Contact Information" 
+        subtitle="Enter staff's contact details"
+      />
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="email"
+            label="Email Address"
+            type="email"
+            startIcon={<EmailIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="phone"
+            label="Phone Number"
+            type="tel"
+            startIcon={<PhoneIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="emergencyContact"
+            label="Emergency Contact"
+            type="tel"
+            startIcon={<EmergencyIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12}>
+          <CustomTextField
+            name="address"
+            label="Address"
+            multiline={true}
+            rows={2}
+            startIcon={<LocationIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+const EmploymentInfoSection = ({ 
+  values, 
+  handleBlur, 
+  handleChange, 
+  touched, 
+  errors,
+  focusedField,
+  setFocusedField,
+  showHints,
+  setShowHints,
+  getFieldHint
+}) => {
+  return (
+    <Box>
+      <SectionHeader 
+        icon={<WorkIcon />} 
+        title="Employment Information" 
+        subtitle="Enter staff's employment details"
+      />
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="employmentType"
+            label="Employment Type"
+            select={true}
+            options={employmentTypes}
+            startIcon={<WorkIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="qualification"
+            label="Qualification"
+            select={true}
+            options={qualificationLevels}
+            startIcon={<WorkIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="joiningDate"
+            label="Joining Date"
+            type="date"
+            startIcon={<CalendarIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6}>
+          <CustomTextField
+            name="salary"
+            label="Salary"
+            type="number"
+            startIcon={<MoneyIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+            handleBlur={handleBlur}
+            handleChange={handleChange}
+            values={values}
+            touched={touched}
+            errors={errors}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            showHints={showHints}
+            setShowHints={setShowHints}
+            getFieldHint={getFieldHint}
+          />
+        </Grid>
+        
+        {["Doctor", "Nurse", "Technician"].includes(values.position) && (
+          <Grid item xs={12}>
+            <CustomTextField
+              name="specialization"
+              label="Specialization"
+              select={true}
+              options={specializations[values.position] || []}
+              startIcon={<WorkIcon sx={{ color: "#757575", fontSize: '1.2rem' }} />}
+              handleBlur={handleBlur}
+              handleChange={handleChange}
+              values={values}
+              touched={touched}
+              errors={errors}
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+              showHints={showHints}
+              setShowHints={setShowHints}
+              getFieldHint={getFieldHint}
+            />
+          </Grid>
+        )}
+      </Grid>
+    </Box>
+  );
+};
+
+const isBasicInfoComplete = (values, errors) => {
+  const requiredFields = ['name', 'department', 'shift', 'position'];
+  return requiredFields.every(field => values[field]) && !requiredFields.some(field => errors[field]);
+};
+
+const isContactInfoComplete = (values, errors) => {
+  const requiredFields = ['email', 'phone', 'address', 'emergencyContact'];
+  return requiredFields.every(field => values[field]) && !requiredFields.some(field => errors[field]);
+};
+
+const isEmploymentInfoComplete = (values, errors) => {
+  const requiredFields = ['employmentType', 'qualification', 'joiningDate', 'salary'];
+  if (["Doctor", "Nurse", "Technician"].includes(values.position)) {
+    requiredFields.push('specialization');
+  }
+  return requiredFields.every(field => values[field]) && !requiredFields.some(field => errors[field]);
+};
+
+const FormNavigation = ({ activeStep, setActiveStep, totalSteps, isValid, isSubmitting, values, errors }) => {
+  const canProceedToNext = () => {
+    switch (activeStep) {
+      case 0:
+        return isBasicInfoComplete(values, errors);
+      case 1:
+        return isContactInfoComplete(values, errors);
+      case 2:
+        return isEmploymentInfoComplete(values, errors);
+      default:
+        return false;
+    }
+  };
+
+  return (
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      mt: 4,
+      pt: 2,
+      borderTop: '1px solid rgba(0,0,0,0.1)'
+    }}>
+      <Button
+        variant="outlined"
+        color="primary"
+        onClick={() => setActiveStep(prev => Math.max(0, prev - 1))}
+        disabled={activeStep === 0}
+        startIcon={<ArrowBackIcon />}
+        sx={{
+          borderRadius: "8px",
+          textTransform: "none",
+          px: 3,
+          py: 1,
+          "&:hover": {
+            backgroundColor: "rgba(26, 35, 126, 0.04)"
+          }
+        }}
+      >
+        Previous
+      </Button>
+      
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<CloseIcon />}
+          sx={{
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            "&:hover": {
+              backgroundColor: "rgba(244, 67, 54, 0.04)"
+            }
+          }}
+        >
+          Cancel
+        </Button>
+        
+        {activeStep === totalSteps - 1 ? (
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!isValid || isSubmitting}
+            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <CheckIcon />}
+            sx={{
+              backgroundColor: "#1a237e",
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              "&:hover": {
+                backgroundColor: "#3949ab"
+              },
+              "&:disabled": {
+                backgroundColor: "rgba(0, 0, 0, 0.12)"
+              }
+            }}
+          >
+            {isSubmitting ? "Creating..." : "Create Staff"}
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={() => setActiveStep(prev => Math.min(totalSteps - 1, prev + 1))}
+            disabled={!canProceedToNext()}
+            endIcon={<ArrowForwardIcon />}
+            sx={{
+              backgroundColor: "#1a237e",
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              "&:hover": {
+                backgroundColor: "#3949ab"
+              },
+              "&:disabled": {
+                backgroundColor: "rgba(0, 0, 0, 0.12)"
+              }
+            }}
+          >
+            Next
+          </Button>
+        )}
+      </Box>
+    </Box>
+  );
+};
 
 const Form = () => {
   const { setstaffData } = useContext(ToggledContext);
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [formProgress, setFormProgress] = useState(0);
+  const [focusedField, setFocusedField] = useState(null);
+  const [showHints, setShowHints] = useState({});
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
+
+  const steps = ['Basic Info', 'Contact', 'Employment'];
+  const totalSteps = steps.length;
+
+  const calculateProgress = (values) => {
+    const totalFields = Object.keys(values).length;
+    const filledFields = Object.keys(values).filter(key => values[key] !== "" && values[key] !== null).length;
+    return Math.round((filledFields / totalFields) * 100);
+  };
 
   const handleFormSubmit = async (values, actions) => {
     try {
       setLoading(true);
+      setError(null);
+      
+      const formattedData = {
+        ...values,
+        status: values.onDuty,
+        salary: Number(values.salary),
+      };
+
       const response = await fetch(
         "https://dashboard-gb84.onrender.com/staffDashboard",
         {
@@ -202,995 +898,288 @@ const Form = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(values),
+          body: JSON.stringify(formattedData),
         }
       );
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to create new staff");
+        throw new Error(responseData.message || "Failed to create new staff");
       }
 
-      const data = await response.json();
-      setstaffData((prev) => [...prev, data]);
-      actions.resetForm({ values: initialValues });
+      setstaffData((prev) => [...prev, responseData]);
+      
+      actions.resetForm();
+      setActiveStep(0);
+      setFormProgress(0);
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      setShowConfetti(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setShowConfetti(false);
+      }, 3000);
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong while creating staff.");
+      setError(error.message || "Something went wrong while creating staff.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <Box m="20px">
-      <Header title="CREATE STAFF" subtitle="Create a New Staff Profile" />
+  const getFieldHint = (fieldName) => {
+    return fieldHints[fieldName] || "";
+  };
 
-      <Fade in={true} timeout={800}>
-        <Paper
-          elevation={3}
-          sx={{
-            p: 3,
-            borderRadius: "16px",
-            backgroundColor: "white",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
+  return (
+    <Box>
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.3}
+          colors={['#1a237e', '#3949ab', '#5c6bc0', '#7986cb', '#9fa8da']}
+        />
+      )}
+      
+      <Box 
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          maxWidth: '1000px',
+          margin: '0 auto',
+          px: { xs: 1, sm: 2, md: 3 }
+        }}
+      >
+        <Box sx={{ width: '100%', mb: 3 }}>
+          <Typography variant="h5" sx={{ 
+            color: '#1a237e', 
+            fontWeight: 600,
+            mb: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            <PersonIcon /> Create New Staff Profile
+          </Typography>
+          <Box sx={{ 
+            width: '100%', 
+            height: '4px', 
+            backgroundColor: 'rgba(0,0,0,0.08)',
+            borderRadius: '2px',
+            mt: 2,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <Box sx={{ 
+              position: 'absolute',
               top: 0,
               left: 0,
-              right: 0,
-              height: "6px",
-              background: "linear-gradient(90deg, #1a237e, #3949ab, #5c6bc0)",
-            },
-          }}
-        >
-          <Formik
-            onSubmit={handleFormSubmit}
-            initialValues={initialValues}
-            validationSchema={checkoutSchema}
+              height: '100%',
+              width: `${formProgress}%`,
+              backgroundColor: '#1a237e',
+              borderRadius: '2px',
+              transition: 'width 0.3s ease'
+            }} />
+          </Box>
+          <Typography variant="body2" sx={{ 
+            color: '#757575',
+            mt: 0.5,
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5
+          }}>
+            <InfoIcon fontSize="small" />
+            {formProgress < 100 ? `${formProgress}% complete - Fill in the remaining fields` : 'All required fields completed!'}
+          </Typography>
+        </Box>
+
+        <Fade in={true} timeout={800}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: "12px",
+              backgroundColor: "white",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              position: "relative",
+              overflow: "hidden",
+              width: "100%",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: "linear-gradient(90deg, #1a237e, #3949ab, #5c6bc0)",
+              },
+            }}
           >
-            {({
-              values,
-              errors,
-              touched,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-            }) => (
-              <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  {/* Basic Information Section */}
-                  <Grid item xs={12}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                      <Avatar 
-                        sx={{ 
-                          bgcolor: "#1a237e",
-                          width: 48,
-                          height: 48,
-                          boxShadow: "0 4px 8px rgba(26, 35, 126, 0.3)",
-                        }}
-                      >
-                        <PersonIcon fontSize="large" />
-                      </Avatar>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: "#1a237e",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        Basic Information
-                        <Tooltip title="Enter staff's basic details">
-                          <HelpIcon fontSize="small" sx={{ color: "#757575", cursor: "help" }} />
-                        </Tooltip>
-                      </Typography>
-                    </Box>
-                  </Grid>
+            <Stepper 
+              activeStep={activeStep} 
+              alternativeLabel
+              sx={{ 
+                mb: 4,
+                '& .MuiStepLabel-root .Mui-active': {
+                  color: '#1a237e',
+                },
+                '& .MuiStepLabel-root .Mui-completed': {
+                  color: '#4caf50',
+                },
+                '& .MuiStepConnector-line': {
+                  borderColor: 'rgba(0,0,0,0.1)',
+                },
+                '& .MuiStepConnector-active': {
+                  '& .MuiStepConnector-line': {
+                    borderColor: '#1a237e',
+                  },
+                },
+                '& .MuiStepConnector-completed': {
+                  '& .MuiStepConnector-line': {
+                    borderColor: '#4caf50',
+                  },
+                },
+              }}
+            >
+              {steps.map((label, index) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="text"
-                      label="Full Name"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.name}
-                      name="name"
-                      error={touched.name && Boolean(errors.name)}
-                      helperText={touched.name && errors.name}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <PersonIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
+            <Formik
+              onSubmit={handleFormSubmit}
+              initialValues={initialValues}
+              validationSchema={checkoutSchema}
+            >
+              {({
+                values,
+                errors,
+                touched,
+                handleBlur,
+                handleChange,
+                handleSubmit,
+                isValid,
+                isSubmitting,
+                actions
+              }) => {
+                useEffect(() => {
+                  setFormProgress(calculateProgress(values));
+                }, [values]);
 
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={touched.department && Boolean(errors.department)}>
-                      <InputLabel sx={{ color: "#424242" }}>Department</InputLabel>
-                      <Select
-                        value={values.department}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        name="department"
-                        label="Department"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <WorkIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        }
-                        sx={{
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                          "& .MuiSelect-select": {
-                            color: "#212121",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginRight: 1,
-                          },
-                        }}
-                      >
-                        {departments.map((dept) => (
-                          <MenuItem key={dept} value={dept}>
-                            {dept}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.department && errors.department && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                          {errors.department}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={touched.shift && Boolean(errors.shift)}>
-                      <InputLabel sx={{ color: "#424242" }}>Shift</InputLabel>
-                      <Select
-                        value={values.shift}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        name="shift"
-                        label="Shift"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <CalendarIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        }
-                        sx={{
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                          "& .MuiSelect-select": {
-                            color: "#212121",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginRight: 1,
-                          },
-                        }}
-                      >
-                        {shifts.map((shift) => (
-                          <MenuItem key={shift} value={shift}>
-                            {shift}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.shift && errors.shift && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                          {errors.shift}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={touched.position && Boolean(errors.position)}>
-                      <InputLabel sx={{ color: "#424242" }}>Position</InputLabel>
-                      <Select
-                        value={values.position}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        name="position"
-                        label="Position"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <WorkIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        }
-                        sx={{
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                          "& .MuiSelect-select": {
-                            color: "#212121",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                          "& .MuiInputAdornment-root": {
-                            marginRight: 1,
-                          },
-                        }}
-                      >
-                        {positions.map((pos) => (
-                          <MenuItem key={pos} value={pos}>
-                            {pos}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.position && errors.position && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                          {errors.position}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  {/* Contact Information Section */}
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 3, borderColor: "#e0e0e0", borderWidth: "1px" }} />
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                      <Avatar 
-                        sx={{ 
-                          bgcolor: "#3949ab",
-                          width: 48,
-                          height: 48,
-                          boxShadow: "0 4px 8px rgba(57, 73, 171, 0.3)",
-                        }}
-                      >
-                        <EmailIcon fontSize="large" />
-                      </Avatar>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: "#1a237e",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        Contact Information
-                        <Tooltip title="Enter staff's contact details">
-                          <HelpIcon fontSize="small" sx={{ color: "#757575", cursor: "help" }} />
-                        </Tooltip>
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="email"
-                      label="Email"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.email}
-                      name="email"
-                      error={touched.email && Boolean(errors.email)}
-                      helperText={touched.email && errors.email}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <EmailIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="text"
-                      label="Phone"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.phone}
-                      name="phone"
-                      error={touched.phone && Boolean(errors.phone)}
-                      helperText={touched.phone && errors.phone}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <PhoneIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="text"
-                      label="Address"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.address}
-                      name="address"
-                      multiline
-                      rows={2}
-                      error={touched.address && Boolean(errors.address)}
-                      helperText={touched.address && errors.address}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LocationIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  {/* Employment Details Section */}
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 3, borderColor: "#e0e0e0", borderWidth: "1px" }} />
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                      <Avatar 
-                        sx={{ 
-                          bgcolor: "#5c6bc0",
-                          width: 48,
-                          height: 48,
-                          boxShadow: "0 4px 8px rgba(92, 107, 192, 0.3)",
-                        }}
-                      >
-                        <WorkIcon fontSize="large" />
-                      </Avatar>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: "#1a237e",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        Employment Details
-                        <Tooltip title="Enter staff's employment information">
-                          <HelpIcon fontSize="small" sx={{ color: "#757575", cursor: "help" }} />
-                        </Tooltip>
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={touched.employmentType && Boolean(errors.employmentType)}>
-                      <InputLabel sx={{ color: "#424242" }}>Employment Type</InputLabel>
-                      <Select
-                        value={values.employmentType}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        name="employmentType"
-                        label="Employment Type"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <WorkIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        }
-                        sx={{
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        }}
-                      >
-                        {employmentTypes.map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.employmentType && errors.employmentType && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                          {errors.employmentType}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth error={touched.qualification && Boolean(errors.qualification)}>
-                      <InputLabel sx={{ color: "#424242" }}>Qualification Level</InputLabel>
-                      <Select
-                        value={values.qualification}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        name="qualification"
-                        label="Qualification Level"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <WorkIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        }
-                        sx={{
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        }}
-                      >
-                        {qualificationLevels.map((level) => (
-                          <MenuItem key={level} value={level}>
-                            {level}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.qualification && errors.qualification && (
-                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                          {errors.qualification}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  {["Doctor", "Nurse", "Technician"].includes(values.position) && (
-                    <Grid item xs={12} sm={6}>
-                      <FormControl fullWidth error={touched.specialization && Boolean(errors.specialization)}>
-                        <InputLabel sx={{ color: "#424242" }}>Specialization</InputLabel>
-                        <Select
-                          value={values.specialization}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          name="specialization"
-                          label="Specialization"
-                          startAdornment={
-                            <InputAdornment position="start">
-                              <WorkIcon sx={{ color: "#757575" }} />
-                            </InputAdornment>
-                          }
-                          sx={{
-                            borderRadius: "12px",
-                            transition: "all 0.3s ease",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#bdbdbd",
-                              borderWidth: "1.5px",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#757575",
-                              borderWidth: "2px",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#1a237e",
-                              borderWidth: "2px",
-                            },
-                          }}
-                        >
-                          {specializations[values.position]?.map((spec) => (
-                            <MenuItem key={spec} value={spec}>
-                              {spec}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        {touched.specialization && errors.specialization && (
-                          <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                            {errors.specialization}
-                          </Typography>
-                        )}
-                      </FormControl>
-                    </Grid>
-                  )}
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="date"
-                      label="Joining Date"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.joiningDate}
-                      name="joiningDate"
-                      error={touched.joiningDate && Boolean(errors.joiningDate)}
-                      helperText={touched.joiningDate && errors.joiningDate}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <CalendarIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="text"
-                      label="Salary"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.salary}
-                      name="salary"
-                      error={touched.salary && Boolean(errors.salary)}
-                      helperText={touched.salary && errors.salary}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <MoneyIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      type="text"
-                      label="Emergency Contact"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      value={values.emergencyContact}
-                      name="emergencyContact"
-                      error={touched.emergencyContact && Boolean(errors.emergencyContact)}
-                      helperText={touched.emergencyContact && errors.emergencyContact}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <EmergencyIcon sx={{ color: "#757575" }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          transition: "all 0.3s ease",
-                          "& fieldset": {
-                            borderColor: "#bdbdbd",
-                            borderWidth: "1.5px",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#757575",
-                            borderWidth: "2px",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#1a237e",
-                            borderWidth: "2px",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#424242",
-                          "&.Mui-focused": {
-                            color: "#1a237e",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "#212121",
-                        },
-                        "& .MuiFormHelperText-root": {
-                          marginLeft: 0,
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Box 
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: "12px", 
-                        border: "1.5px solid #e0e0e0",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          borderColor: "#bdbdbd",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                        },
-                      }}
-                    >
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={values.onDuty}
-                            onChange={handleChange}
-                            name="onDuty"
-                            sx={{
-                              "& .MuiSwitch-switchBase.Mui-checked": {
-                                color: "#1a237e",
-                                "&:hover": {
-                                  backgroundColor: "rgba(26, 35, 126, 0.08)",
-                                },
-                                "&.Mui-disabled": {
-                                  color: "rgba(26, 35, 126, 0.5)",
-                                },
-                                "& + .MuiSwitch-track": {
-                                  backgroundColor: "#1a237e !important",
-                                  opacity: 1,
-                                },
-                              },
-                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                                backgroundColor: "#1a237e !important",
-                                opacity: 1,
-                              },
-                              "& .MuiSwitch-track": {
-                                backgroundColor: "#757575 !important",
-                                opacity: 1,
-                              },
-                              "& .MuiSwitch-thumb": {
-                                backgroundColor: values.onDuty ? "#1a237e" : "#f5f5f5",
-                                border: "1px solid #bdbdbd",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                              },
-                            }}
-                          />
-                        }
-                        label={
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography sx={{ color: "#424242", fontWeight: 500 }}>
-                              {values.onDuty ? "Currently On Duty" : "Currently Off Duty"}
-                            </Typography>
-                            <Chip 
-                              label={values.onDuty ? "Active" : "Inactive"} 
-                              size="small"
-                              color={values.onDuty ? "primary" : "default"}
-                              sx={{ 
-                                backgroundColor: values.onDuty ? "rgba(26, 35, 126, 0.1)" : "rgba(189, 189, 189, 0.1)",
-                                color: values.onDuty ? "#1a237e" : "#757575",
-                                fontWeight: 500,
-                                border: values.onDuty ? "1px solid rgba(26, 35, 126, 0.3)" : "1px solid rgba(189, 189, 189, 0.3)",
-                              }}
-                            />
-                            <Tooltip title="Toggle staff's duty status">
-                              <HelpIcon fontSize="small" sx={{ color: "#757575", cursor: "help" }} />
-                            </Tooltip>
-                          </Box>
-                        }
+                return (
+                  <form onSubmit={handleSubmit}>
+                    {activeStep === 0 && (
+                      <BasicInfoSection 
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        touched={touched}
+                        errors={errors}
+                        focusedField={focusedField}
+                        setFocusedField={setFocusedField}
+                        showHints={showHints}
+                        setShowHints={setShowHints}
+                        getFieldHint={getFieldHint}
                       />
-                    </Box>
-                  </Grid>
-                </Grid>
+                    )}
+                    
+                    {activeStep === 1 && (
+                      <ContactInfoSection 
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        touched={touched}
+                        errors={errors}
+                        focusedField={focusedField}
+                        setFocusedField={setFocusedField}
+                        showHints={showHints}
+                        setShowHints={setShowHints}
+                        getFieldHint={getFieldHint}
+                      />
+                    )}
+                    
+                    {activeStep === 2 && (
+                      <EmploymentInfoSection 
+                        values={values}
+                        handleBlur={handleBlur}
+                        handleChange={handleChange}
+                        touched={touched}
+                        errors={errors}
+                        focusedField={focusedField}
+                        setFocusedField={setFocusedField}
+                        showHints={showHints}
+                        setShowHints={setShowHints}
+                        getFieldHint={getFieldHint}
+                      />
+                    )}
 
+                    <FormNavigation 
+                      activeStep={activeStep}
+                      setActiveStep={setActiveStep}
+                      totalSteps={totalSteps}
+                      isValid={isValid}
+                      isSubmitting={isSubmitting}
+                      values={values}
+                      errors={errors}
+                    />
+
+                    {error && (
+                      <Box
+                        sx={{
+                          mt: 2,
+                          p: 2,
+                          backgroundColor: "#ffebee",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1
+                        }}
+                      >
+                        <CancelIcon color="error" />
+                        <Typography variant="body2" color="error">
+                          {error}
+                        </Typography>
+                      </Box>
+                    )}
+                  </form>
+                );
+              }}
+            </Formik>
+            
+            {success && (
+              <Zoom in={success}>
                 <Box
-                  display="flex"
-                  justifyContent="flex-end"
-                  gap={2}
-                  mt={4}
+                  sx={{
+                    position: "fixed",
+                    bottom: 24,
+                    right: 24,
+                    backgroundColor: "#4caf50",
+                    color: "white",
+                    p: 1.5,
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    zIndex: 1000,
+                    fontSize: '0.9rem'
+                  }}
                 >
-                  <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={() => window.location.reload()}
-                    startIcon={<RefreshIcon />}
-                    sx={{
-                      borderRadius: "12px",
-                      textTransform: "none",
-                      px: 3,
-                      py: 1.2,
-                      color: "#424242",
-                      borderColor: "#bdbdbd",
-                      backgroundColor: "rgba(245, 245, 245, 0.8)",
-                      fontWeight: 500,
-                      fontSize: "0.95rem",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        backgroundColor: "rgba(224, 224, 224, 0.8)",
-                        borderColor: "#9e9e9e",
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={loading}
-                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
-                    sx={{
-                      borderRadius: "12px",
-                      textTransform: "none",
-                      px: 3,
-                      py: 1.2,
-                      backgroundColor: "#1a237e",
-                      color: "#ffffff",
-                      fontWeight: 500,
-                      fontSize: "0.95rem",
-                      boxShadow: "0 4px 12px rgba(26, 35, 126, 0.3)",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        backgroundColor: "#0d1757",
-                        boxShadow: "0 6px 16px rgba(26, 35, 126, 0.4)",
-                        transform: "translateY(-2px)",
-                      },
-                      "&:active": {
-                        transform: "translateY(0)",
-                      },
-                      "&:disabled": {
-                        backgroundColor: "rgba(26, 35, 126, 0.5)",
-                        color: "rgba(255, 255, 255, 0.7)",
-                        boxShadow: "none",
-                      },
-                    }}
-                  >
-                    {loading ? "Creating Staff..." : "Create New Staff"}
-                  </Button>
+                  <CheckCircleIcon fontSize="small" />
+                  <Typography variant="body2">Staff created successfully!</Typography>
                 </Box>
-              </form>
+              </Zoom>
             )}
-          </Formik>
-          
-          {success && (
-            <Zoom in={success}>
-              <Box
-                sx={{
-                  position: "fixed",
-                  bottom: 24,
-                  right: 24,
-                  backgroundColor: "#4caf50",
-                  color: "white",
-                  p: 2,
-                  borderRadius: "12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                  zIndex: 1000,
-                }}
-              >
-                <CheckCircleIcon />
-                <Typography>Staff created successfully!</Typography>
-              </Box>
-            </Zoom>
-          )}
-        </Paper>
-      </Fade>
+          </Paper>
+        </Fade>
+      </Box>
     </Box>
   );
 };
