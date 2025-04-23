@@ -73,12 +73,9 @@ function Dashboard() {
     }
   }, [patientData]);
 
-  // Debug logs
+  // Remove console.log statements
   useEffect(() => {
-    console.log('Active Board:', activeBoard);
-    console.log('Patient Data:', patientData);
-    console.log('Financial Data:', financialData);
-    console.log('Staff Data:', staffData);
+    // Component logic without console logs
   }, [activeBoard, patientData, financialData, staffData]);
 
   // Get the label of the active board

@@ -46,9 +46,9 @@ const StaffEdit = ({ open, onClose, onSuccess, staff }) => {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      console.log('Sending update request with data:', editedStaff);
       const response = await fetch(
         `https://dashboard-gb84.onrender.com/staffDashboard/${staff.id}`,
         {
@@ -60,25 +60,17 @@ const StaffEdit = ({ open, onClose, onSuccess, staff }) => {
         }
       );
 
-      const responseText = await response.text();
-      console.log('Server response:', response.status, responseText);
-
       if (!response.ok) {
-        throw new Error(`Failed to update staff: ${response.status} ${responseText}`);
+        throw new Error("Failed to update staff");
       }
 
-      const updatedStaff = JSON.parse(responseText);
-      console.log('Successfully updated staff:', updatedStaff);
-      
-      if (typeof onSuccess === 'function') {
+      const updatedStaff = await response.json();
+      if (onSuccess) {
         onSuccess(updatedStaff);
-      } else {
-        console.error('onSuccess is not a function:', onSuccess);
       }
-      onClose(); // Close the dialog after successful update
     } catch (err) {
       console.error("Error updating staff:", err);
-      alert(err.message);
+      alert("Failed to update staff. Please try again.");
     }
   };
 

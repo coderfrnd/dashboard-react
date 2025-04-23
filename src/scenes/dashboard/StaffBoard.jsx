@@ -186,8 +186,6 @@ const StaffBoard = ({ colors }) => {
           </Paper>
         </Grid>
       </Grid>
-
-      {/* Staff List */}
       <Paper
         sx={{
           borderRadius: '12px',

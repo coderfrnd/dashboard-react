@@ -1,60 +1,135 @@
-import { Box, Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Paper, Typography } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { Box, Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Paper, Typography, Fade, Zoom, Chip, Tooltip, IconButton } from "@mui/material";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Header } from "../../components";
 import { useContext, useState, useEffect } from "react";
 import { ToggledContext } from "../../App";
 import { useTheme } from "@mui/material/styles";
 import { tokens } from "../../theme";
-import { Edit, Delete, Person, Groups, Business, CheckCircle } from '@mui/icons-material';
+import { Edit, Delete, Person, Groups, Business, CheckCircle, Notifications, Search, FilterList, Refresh } from '@mui/icons-material';
 import StaffEdit from "../dashboard/StaffEdit";
 
-const StatCard = ({ title, value, subtitle, icon, color }) => {
+const StatCard = ({ title, value, subtitle, icon, color, trend, colors }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   
   return (
-    <Paper
-      sx={{
-        p: 3,
-        borderRadius: '12px',
-        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'white',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-        },
-      }}
-    >
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box>
-          <Typography color={isDark ? "white" : "text.secondary"} fontSize="0.875rem" mb={1}>
-            {title}
-          </Typography>
-          <Typography variant="h4" fontWeight="bold" color={isDark ? "white" : "text.primary"}>
-            {value}
-          </Typography>
+    <Fade in={true} timeout={800}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: '20px',
+          background: isDark 
+            ? `linear-gradient(145deg, ${color}15, ${color}05)`
+            : `linear-gradient(145deg, #ffffff, ${color}08)`,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          border: isDark 
+            ? `1px solid ${color}20`
+            : `1px solid ${color}15`,
+          backdropFilter: 'blur(10px)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: `linear-gradient(90deg, ${color}, ${color}80)`,
+          },
+          '&:hover': {
+            transform: 'translateY(-6px)',
+            boxShadow: isDark 
+              ? `0 12px 24px ${color}15`
+              : `0 12px 24px ${color}10`,
+          },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Box>
+            <Typography 
+              color={isDark ? "rgba(255, 255, 255, 0.7)" : "text.secondary"} 
+              fontSize="0.875rem" 
+              mb={1}
+              sx={{ 
+                fontWeight: 600,
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              {title}
+              {trend && (
+                <Chip
+                  label={trend > 0 ? `+${trend}%` : `${trend}%`}
+                  size="small"
+                  sx={{
+                    backgroundColor: trend > 0 ? `${colors.greenAccent[500]}20` : `${colors.redAccent[500]}20`,
+                    color: trend > 0 ? colors.greenAccent[500] : colors.redAccent[500],
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    height: '20px'
+                  }}
+                />
+              )}
+            </Typography>
+            <Typography 
+              variant="h3" 
+              fontWeight="bold" 
+              sx={{
+                background: `linear-gradient(45deg, ${color}, ${color}99)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-1px',
+                lineHeight: 1.2
+              }}
+            >
+              {value}
+            </Typography>
+          </Box>
+          <Zoom in={true} timeout={1000}>
+            <Box
+              sx={{
+                background: `linear-gradient(135deg, ${color}20, ${color}10)`,
+                borderRadius: '16px',
+                p: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.3s ease',
+                border: `1px solid ${color}20`,
+                '&:hover': {
+                  transform: 'scale(1.1) rotate(5deg)',
+                  background: `linear-gradient(135deg, ${color}30, ${color}20)`,
+                }
+              }}
+            >
+              {icon}
+            </Box>
+          </Zoom>
         </Box>
-        <Box
+        <Typography 
+          color={isDark ? "rgba(255,255,255,0.6)" : "text.secondary"} 
+          fontSize="0.875rem"
           sx={{
-            backgroundColor: `${color}15`,
-            borderRadius: '8px',
-            p: 1,
+            fontWeight: 400,
+            letterSpacing: '0.3px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: 1
           }}
         >
-          {icon}
-        </Box>
-      </Box>
-      <Typography color={isDark ? "rgba(255,255,255,0.7)" : "text.secondary"} fontSize="0.875rem">
-        {subtitle}
-      </Typography>
-    </Paper>
+          {subtitle}
+        </Typography>
+      </Paper>
+    </Fade>
   );
 };
 
@@ -66,7 +141,7 @@ const Staff = () => {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, staff: null });
 
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const colors = tokens();
   const isDark = theme.palette.mode === "dark";
   const subtitleColor = isDark ? colors.gray[100] : colors.gray[700];
   const { staffData, setStaffData } = useContext(ToggledContext);
@@ -143,19 +218,31 @@ const Staff = () => {
   const shiftCount = shifts.length;
 
   const columns = [
-    { field: "id", headerName: "ID", width: 70 },
+    { field: "id", headerName: "ID", flex: 0.3, minWidth: 50 },
     {
       field: "name",
       headerName: "Name",
-      width: 180,
+      flex: 1,
+      minWidth: 150,
       cellClassName: "name-column--cell",
     },
-    { field: "department", headerName: "Department", width: 150 },
-    { field: "shift", headerName: "Shift", width: 120 },
+    { 
+      field: "department", 
+      headerName: "Department", 
+      flex: 1,
+      minWidth: 120 
+    },
+    { 
+      field: "shift", 
+      headerName: "Shift", 
+      flex: 0.7,
+      minWidth: 100 
+    },
     {
       field: "onDuty",
       headerName: "On Duty",
-      width: 120,
+      flex: 0.5,
+      minWidth: 80,
       headerAlign: "center",
       align: "center",
       renderCell: ({ row }) => (
@@ -181,12 +268,17 @@ const Staff = () => {
         </Box>
       ),
     },
-    { field: "email", headerName: "Email", width: 220 },
-    { field: "phone", headerName: "Phone", width: 150 },
+    { 
+      field: "email", 
+      headerName: "Email", 
+      flex: 1.2,
+      minWidth: 180 
+    },
     {
       field: "actions",
       headerName: "Actions",
-      width: 180,
+      flex: 0.8,
+      minWidth: 120,
       headerAlign: "center",
       align: "center",
       renderCell: ({ row }) => {
@@ -198,19 +290,12 @@ const Staff = () => {
               onClick={() => handleEditClick(row)}
               startIcon={<Edit />}
               sx={{
-                minWidth: '32px',
-                height: '32px',
-                backgroundColor: colors.greenAccent[600],
+                backgroundColor: colors.blueAccent[600],
                 fontSize: '13px',
-                fontWeight: "500",
-                color: '#ffffff',
-                padding: '6px 12px',
-                transition: 'all 0.2s ease',
+                padding: '4px 8px',
                 '&:hover': {
-                  backgroundColor: colors.greenAccent[500],
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                },
+                  backgroundColor: colors.blueAccent[500],
+                }
               }}
             >
               Edit
@@ -221,19 +306,12 @@ const Staff = () => {
               onClick={() => handleDelete(row)}
               startIcon={<Delete />}
               sx={{
-                minWidth: '32px',
-                height: '32px',
-                backgroundColor: colors.redAccent[500],
+                backgroundColor: colors.redAccent[600],
                 fontSize: '13px',
-                fontWeight: "500",
-                color: '#ffffff',
-                padding: '6px 12px',
-                transition: 'all 0.2s ease',
+                padding: '4px 8px',
                 '&:hover': {
-                  backgroundColor: colors.redAccent[600],
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                },
+                  backgroundColor: colors.redAccent[500],
+                }
               }}
             >
               Delete
@@ -245,40 +323,133 @@ const Staff = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      <Box mb={4}>
-        <Typography variant="h3" fontWeight="bold" color="#111" mb={1}>
-          Staff Dashboard
-        </Typography>
-        <Typography color="#666">
-          Monitor and manage staff records
-        </Typography>
+    <Box 
+      sx={{ 
+        height: '100%',
+        width: '100%',
+        maxWidth: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        p: 3,
+        gap: 3,
+        overflow: 'auto',
+        background: isDark 
+          ? 'linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.98) 100%)'
+          : 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)',
+        '& > *': {
+          maxWidth: '100%'
+        }
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Header 
+          title="STAFF MANAGEMENT" 
+          subtitle="Managing Hospital Staff Members" 
+        />
+        <Stack direction="row" spacing={2}>
+          <Tooltip title="Search Staff">
+            <IconButton
+              sx={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                }
+              }}
+            >
+              <Search />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Filter Staff">
+            <IconButton
+              sx={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                }
+              }}
+            >
+              <FilterList />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Refresh Data">
+            <IconButton
+              sx={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                }
+              }}
+            >
+              <Refresh />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Notifications">
+            <IconButton
+              sx={{
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                position: 'relative',
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                },
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: colors.redAccent[500],
+                  borderRadius: '50%',
+                  border: `2px solid ${isDark ? '#000' : '#fff'}`
+                }
+              }}
+            >
+              <Notifications />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Box>
 
-      {/* Stats Overview */}
-      <Grid container spacing={3} mb={4}>
+      <Grid 
+        container 
+        spacing={3} 
+        sx={{ 
+          width: '100%',
+          m: 0,
+          flexShrink: 0
+        }}
+      >
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Staff"
             value={totalStaff}
-            subtitle="Total number of employees"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>👥</Box>}
+            subtitle="Total number of staff members"
+            icon={<Person sx={{ color: colors.greenAccent[500], fontSize: '2rem' }} />}
+            color={colors.greenAccent[500]}
+            trend={5.2}
+            colors={colors}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="On Duty"
             value={onDutyStaff}
-            subtitle="Staff currently working"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>✅</Box>}
+            subtitle="Staff members currently on duty"
+            icon={<CheckCircle sx={{ color: colors.blueAccent[500], fontSize: '2rem' }} />}
+            color={colors.blueAccent[500]}
+            trend={-2.1}
+            colors={colors}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Departments"
             value={departmentCount}
-            subtitle="Active departments"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>🏢</Box>}
+            subtitle="Total number of departments"
+            icon={<Business sx={{ color: colors.redAccent[500], fontSize: '2rem' }} />}
+            color={colors.redAccent[500]}
+            trend={0}
+            colors={colors}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -286,34 +457,55 @@ const Staff = () => {
             title="Shifts"
             value={shiftCount}
             subtitle="Different shift types"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>⏰</Box>}
+            icon={<Groups sx={{ color: colors.blueAccent[500], fontSize: '2rem' }} />}
+            color={colors.blueAccent[500]}
+            trend={1.5}
+            colors={colors}
           />
         </Grid>
       </Grid>
 
       {/* Filter Buttons */}
-      <Paper
-        sx={{
-          p: 2,
-          mb: 4,
-          borderRadius: '12px',
-          backgroundColor: 'white',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 2
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          gap: 2,
+          flexShrink: 0,
+          overflowX: 'auto',
+          pb: 1,
+          '&::-webkit-scrollbar': {
+            height: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+            borderRadius: '3px',
+            '&:hover': {
+              background: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+            },
+          },
         }}
       >
         <Button
           variant={filter === "All" ? "contained" : "outlined"}
           onClick={() => handleFilterChange("All")}
           sx={{
-            backgroundColor: filter === "All" ? colors.blueAccent[500] : 'transparent',
-            color: filter === "All" ? '#ffffff' : colors.blueAccent[500],
-            borderColor: colors.blueAccent[500],
+            backgroundColor: filter === "All" ? colors.blueAccent[600] : 'transparent',
+            color: filter === "All" ? '#fff' : colors.blueAccent[600],
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1,
+            transition: 'all 0.3s ease',
+            border: filter === "All" ? 'none' : `2px solid ${colors.blueAccent[600]}`,
             '&:hover': {
-              backgroundColor: filter === "All" ? colors.blueAccent[600] : 'rgba(0, 0, 0, 0.05)',
-              borderColor: colors.blueAccent[500],
-            },
+              backgroundColor: filter === "All" ? colors.blueAccent[500] : `${colors.blueAccent[600]}15`,
+              transform: 'translateY(-2px)',
+            }
           }}
         >
           All Staff
@@ -322,13 +514,19 @@ const Staff = () => {
           variant={filter === "Present" ? "contained" : "outlined"}
           onClick={() => handleFilterChange("Present")}
           sx={{
-            backgroundColor: filter === "Present" ? colors.greenAccent[500] : 'transparent',
-            color: filter === "Present" ? '#ffffff' : colors.greenAccent[500],
-            borderColor: colors.greenAccent[500],
+            backgroundColor: filter === "Present" ? colors.greenAccent[600] : 'transparent',
+            color: filter === "Present" ? '#fff' : colors.greenAccent[600],
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1,
+            transition: 'all 0.3s ease',
+            border: filter === "Present" ? 'none' : `2px solid ${colors.greenAccent[600]}`,
             '&:hover': {
-              backgroundColor: filter === "Present" ? colors.greenAccent[600] : 'rgba(0, 0, 0, 0.05)',
-              borderColor: colors.greenAccent[500],
-            },
+              backgroundColor: filter === "Present" ? colors.greenAccent[500] : `${colors.greenAccent[600]}15`,
+              transform: 'translateY(-2px)',
+            }
           }}
         >
           On Duty
@@ -337,134 +535,199 @@ const Staff = () => {
           variant={filter === "Absent" ? "contained" : "outlined"}
           onClick={() => handleFilterChange("Absent")}
           sx={{
-            backgroundColor: filter === "Absent" ? colors.redAccent[500] : 'transparent',
-            color: filter === "Absent" ? '#ffffff' : colors.redAccent[500],
-            borderColor: colors.redAccent[500],
+            backgroundColor: filter === "Absent" ? colors.redAccent[600] : 'transparent',
+            color: filter === "Absent" ? '#fff' : colors.redAccent[600],
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1,
+            transition: 'all 0.3s ease',
+            border: filter === "Absent" ? 'none' : `2px solid ${colors.redAccent[600]}`,
             '&:hover': {
-              backgroundColor: filter === "Absent" ? colors.redAccent[600] : 'rgba(0, 0, 0, 0.05)',
-              borderColor: colors.redAccent[500],
-            },
+              backgroundColor: filter === "Absent" ? colors.redAccent[500] : `${colors.redAccent[600]}15`,
+              transform: 'translateY(-2px)',
+            }
           }}
         >
           Off Duty
         </Button>
-      </Paper>
+      </Box>
 
-      {/* Data Table */}
-      <Paper
+      {/* DataGrid */}
+      <Box
         sx={{
-          borderRadius: '12px',
-          backgroundColor: 'white',
+          flexGrow: 1,
+          minHeight: 0,
+          width: '100%',
+          maxWidth: '100%',
           overflow: 'hidden',
-          boxShadow: '0 4px 12px 0 rgba(0,0,0,0.05)',
+          '& .MuiDataGrid-root': {
+            border: 'none',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'white',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: isDark 
+              ? '0 8px 32px rgba(0, 0, 0, 0.2)'
+              : '0 8px 32px rgba(0, 0, 0, 0.08)',
+            width: '100%',
+            maxWidth: '100%',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: isDark 
+                ? '0 12px 48px rgba(0, 0, 0, 0.3)'
+                : '0 12px 48px rgba(0, 0, 0, 0.12)',
+            }
+          },
+          '& .MuiDataGrid-main': {
+            width: '100%',
+            maxWidth: '100%'
+          },
+          '& .MuiDataGrid-virtualScroller': {
+            backgroundColor: isDark ? 'transparent' : '#ffffff',
+            width: '100%',
+            maxWidth: '100%'
+          },
+          '& .MuiDataGrid-cell': {
+            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'}`,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          },
+          '& .name-column--cell': {
+            color: colors.greenAccent[500],
+            fontWeight: '500'
+          },
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : colors.blueAccent[700],
+            color: isDark ? 'white' : '#ffffff',
+            borderBottom: 'none',
+            width: '100%',
+            maxWidth: '100%',
+            '& .MuiDataGrid-columnHeader': {
+              padding: '16px',
+              '&:focus': {
+                outline: 'none'
+              }
+            }
+          },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : colors.blueAccent[700],
+            color: isDark ? 'white' : '#ffffff',
+            width: '100%',
+            maxWidth: '100%'
+          },
+          '& .MuiDataGrid-toolbarContainer': {
+            width: '100%',
+            maxWidth: '100%',
+            padding: '16px',
+            '& .MuiButton-text': {
+              color: isDark ? '#fff' : '#141414'
+            }
+          },
+          '& .MuiDataGrid-row': {
+            width: '100%',
+            maxWidth: '100%',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.02)',
+              transform: 'scale(1.01)',
+            }
+          }
         }}
       >
-        <Box p={3}>
-          <Typography variant="h5" fontWeight="bold" color="#111" mb={3}>
-            Staff Records
-          </Typography>
-          <Box
-            sx={{
-              height: '65vh',
-              width: '100%',
-              '& .MuiDataGrid-root': {
-                border: 'none',
-                '& .MuiDataGrid-cell': {
-                  borderColor: '#f0f0f0'
-                },
-                '& .MuiDataGrid-columnHeaders': {
-                  backgroundColor: '#f8f8f8',
-                  borderBottom: '2px solid #eee',
-                },
-                '& .MuiDataGrid-virtualScroller': {
-                  backgroundColor: '#ffffff',
-                },
-                '& .MuiDataGrid-footerContainer': {
-                  borderTop: '1px solid #eee',
-                  backgroundColor: '#f8f8f8',
-                },
-                '& .name-column--cell': {
-                  color: colors.greenAccent[600],
-                  fontWeight: 600
-                },
-                '& .MuiDataGrid-row': {
-                  '&:nth-of-type(2n)': {
-                    backgroundColor: '#fafafa',
-                  },
-                },
-              },
-            }}
-          >
-            <DataGrid
-              rows={filteredData}
-              columns={columns}
-              loading={!staffData}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 10 },
-                },
-              }}
-              pageSizeOptions={[5, 10, 15, 20]}
-              checkboxSelection
-              disableRowSelectionOnClick
-              getRowHeight={() => 52}
-              sx={{
-                '& .MuiDataGrid-cell:focus': {
-                  outline: 'none',
-                },
-              }}
-            />
-          </Box>
-        </Box>
-      </Paper>
+        <DataGrid
+          rows={filteredData}
+          columns={columns}
+          components={{ Toolbar: GridToolbar }}
+          pageSize={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          disableSelectionOnClick
+          autoHeight={false}
+          sx={{ 
+            height: '100%',
+            width: '100%',
+            maxWidth: '100%'
+          }}
+        />
+      </Box>
 
       {/* Edit Modal */}
       <StaffEdit
         open={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setSelectedStaff(null);
-        }}
+        onClose={() => setEditModalOpen(false)}
         onSuccess={handleEditSuccess}
         staff={selectedStaff}
       />
 
-      {/* Delete Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog 
         open={deleteDialog.open} 
         onClose={() => setDeleteDialog({ open: false, staff: null })}
         PaperProps={{
           sx: {
-            borderRadius: '12px',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-            backgroundColor: 'white',
+            borderRadius: '20px',
+            background: isDark 
+              ? 'linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))'
+              : 'linear-gradient(145deg, #ffffff, #f5f5f5)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: isDark 
+              ? '0 8px 32px rgba(0, 0, 0, 0.2)'
+              : '0 8px 32px rgba(0, 0, 0, 0.08)',
+            border: isDark 
+              ? '1px solid rgba(255, 255, 255, 0.1)'
+              : '1px solid rgba(0, 0, 0, 0.05)',
           }
         }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ 
+          color: isDark ? 'white' : 'text.primary',
+          fontWeight: 600,
+          fontSize: '1.25rem',
+          pb: 1
+        }}>
           Confirm Delete
         </DialogTitle>
         <DialogContent>
-          <Typography>
+          <Typography sx={{ 
+            color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary',
+            fontSize: '1rem'
+          }}>
             Are you sure you want to delete {deleteDialog.staff?.name}?
           </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button 
             onClick={() => setDeleteDialog({ open: false, staff: null })}
-            sx={{ color: colors.blueAccent[500] }}
+            sx={{
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 500,
+              px: 3,
+              py: 1,
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+              color: isDark ? 'white' : 'text.primary',
+              '&:hover': {
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+              }
+            }}
           >
             Cancel
           </Button>
           <Button 
-            onClick={confirmDelete}
+            onClick={confirmDelete} 
+            color="error"
             variant="contained"
             sx={{
-              backgroundColor: colors.redAccent[500],
-              color: 'white',
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 500,
+              px: 3,
+              py: 1,
               '&:hover': {
-                backgroundColor: colors.redAccent[600],
-              },
+                transform: 'translateY(-2px)',
+              }
             }}
           >
             Delete

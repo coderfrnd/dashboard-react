@@ -55,7 +55,7 @@ const SideBar = () => {
       icon: <HowToRegOutlined />,
     },
     {
-      title: "Staff Attendence",
+      title: "Add Events",
       path: "/calendar",
       icon: <CalendarTodayOutlined />,
     },

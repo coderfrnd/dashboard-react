@@ -12,7 +12,7 @@ function App() {
   const [toggled, setToggled] = useState(false);
   const [patientData, setPatientData] = useState([]);
   const [financialData, setFinancialData] = useState([]);
-  const [staffData, setstaffData] = useState([]);
+  const [staffData, setStaffData] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -31,10 +31,9 @@ function App() {
       let staffRes = await fetch(
         `https://dashboard-gb84.onrender.com/staffDashboard`
         // `http://localhost:3000/staffDashboard`
-
       );
       let staffD = await staffRes.json();
-      setstaffData(staffD);
+      setStaffData(staffD);
     })();
   }, []);
 
@@ -49,7 +48,7 @@ function App() {
           setPatientData,
           financialData,
           staffData,
-          setstaffData,
+          setStaffData,
         }}
       >
         <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>

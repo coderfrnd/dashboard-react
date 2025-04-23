@@ -36,9 +36,9 @@ const FinancialEdit = ({ open, onClose, onSuccess, financial }) => {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      console.log('Sending update request with data:', editedFinancial);
       const response = await fetch(
         `https://dashboard-gb84.onrender.com/financialDashboard/${financial.id}`,
         {
@@ -50,25 +50,18 @@ const FinancialEdit = ({ open, onClose, onSuccess, financial }) => {
         }
       );
 
-      const responseText = await response.text();
-      console.log('Server response:', response.status, responseText);
-
       if (!response.ok) {
-        throw new Error(`Failed to update financial record: ${response.status} ${responseText}`);
+        throw new Error("Failed to update financial record");
       }
 
-      const updatedFinancial = JSON.parse(responseText);
-      console.log('Successfully updated financial record:', updatedFinancial);
-      
-      if (typeof onSuccess === 'function') {
+      const updatedFinancial = await response.json();
+      if (onSuccess) {
         onSuccess(updatedFinancial);
-      } else {
-        console.error('onSuccess is not a function:', onSuccess);
       }
-      onClose(); // Close the dialog after successful update
+      onClose();
     } catch (err) {
       console.error("Error updating financial record:", err);
-      alert(err.message);
+      alert("Failed to update financial record. Please try again.");
     }
   };
 

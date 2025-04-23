@@ -1,11 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { Box, Typography, Paper, Grid, IconButton, useTheme } from '@mui/material';
+import { Box, Typography, Paper, Grid, useTheme } from '@mui/material';
 import BarChart from '../../components/BarChart';
 import PieChart from '../../components/PieChart';
-import Patientlist from '../team/Patientlist';
+import PatientCard from '../../components/PatientCard';
 import PatientEdit from './PatientEdit';
 import { ToggledContext } from "../../App";
-import { Edit } from '@mui/icons-material';
 import { tokens } from "../../theme";
 
 const StatCard = ({ title, value, subtitle, icon }) => (
@@ -193,25 +192,28 @@ const PatientBoard = ({ patientData }) => {
         </Grid>
       </Grid>
 
-      {/* Patient List with Edit Button */}
+      {/* Patient Cards Grid */}
       <Paper
         sx={{
+          p: 3,
           borderRadius: '12px',
           backgroundColor: 'white',
-          overflow: 'hidden'
         }}
       >
-        <Box p={3} borderBottom="1px solid #eee">
-          <Typography variant="h6" fontWeight="bold" color="#111">
-            Patient Records
-          </Typography>
-        </Box>
-        <Patientlist 
-          colors={colors} 
-          patientData={patientData}
-          onEditClick={handleEditClick}
-          onDeleteClick={handleDeleteClick}
-        />
+        <Typography variant="h6" fontWeight="bold" color="#111" mb={3}>
+          Patient Records
+        </Typography>
+        <Grid container spacing={3}>
+          {patientData.map((patient) => (
+            <Grid item xs={12} sm={6} md={4} key={patient.id}>
+              <PatientCard
+                patient={patient}
+                handleEdit={handleEditClick}
+                handleDelete={handleDeleteClick}
+              />
+            </Grid>
+          ))}
+        </Grid>
       </Paper>
 
       {/* Edit Modal */}

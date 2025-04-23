@@ -158,7 +158,7 @@ const Default = ({
           >
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
               <Box>
-                <Typography variant="h6" fontWeight="bold" color="#111">
+                <Typography variant="h4" fontWeight="bold" color="#111">
                   Patient Visit Trends
                 </Typography>
                 <Typography color="#666">
@@ -169,7 +169,7 @@ const Default = ({
                 <DownloadOutlined sx={{ fontSize: "26px", color: colors.greenAccent[500] }} />
               </IconButton>
             </Box>
-            <Box height="420px">
+            <Box height="380px">
               <LineChart 
                 data={getLineData()} 
                 isDashboard={true}

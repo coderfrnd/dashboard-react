@@ -65,7 +65,7 @@ export const tokens = () => ({
 // Mui Theme Settings
 export const themeSettings = () => {
   const colors = tokens();
-
+  
   return {
     palette: {
       mode: "light",
@@ -126,10 +126,6 @@ export const themeSettings = () => {
       h6: {
         fontFamily: ["Inter", "Source Sans Pro", "sans-serif"].join(","),
         fontSize: 14,
-        fontWeight: 500,
-      },
-      button: {
-        textTransform: "none",
         fontWeight: 500,
       },
     },
