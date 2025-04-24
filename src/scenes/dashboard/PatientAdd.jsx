@@ -1,457 +1,444 @@
+import React, { useState, useContext } from 'react';
 import {
   TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  Container,
-  Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Switch,
-} from "@mui/material";
-import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+  Dropdown,
+  DatePicker,
+  Toggle,
+  PrimaryButton,
+  Stack,
+  initializeIcons,
+  MessageBar,
+  MessageBarType,
+} from '@fluentui/react';
+import { createPatient } from '../../api/services/patientService';
+import { ToggledContext } from "../../App";
 
-const PatientAdd = () => {
+initializeIcons();
+
+const genderOptions = [
+  { key: 'Male', text: 'Male' },
+  { key: 'Female', text: 'Female' },
+  { key: 'Other', text: 'Other' },
+];
+
+const bloodGroupOptions = [
+  { key: 'A+', text: 'A+' },
+  { key: 'A-', text: 'A-' },
+  { key: 'B+', text: 'B+' },
+  { key: 'B-', text: 'B-' },
+  { key: 'AB+', text: 'AB+' },
+  { key: 'AB-', text: 'AB-' },
+  { key: 'O+', text: 'O+' },
+  { key: 'O-', text: 'O-' },
+];
+
+const formStyles = {
+  field: {
+    wrapper: {
+      display: 'flex',
+      marginBottom: '16px',
+      alignItems: 'flex-start',
+    },
+    label: {
+      width: '150px',
+      fontSize: '14px',
+      color: '#666',
+      fontWeight: '500',
+      marginRight: '16px',
+      marginTop: '8px',
+      textAlign: 'left',
+    },
+    input: {
+      flex: 1,
+      backgroundColor: '#f8f9fa',
+      border: '1px solid #e0e0e0',
+      borderRadius: '4px',
+      padding: '8px 12px',
+      fontSize: '14px',
+      color: '#333',
+      minHeight: '36px',
+      ':hover': {
+        borderColor: '#0078D4',
+      },
+      ':focus': {
+        borderColor: '#0078D4',
+        outline: 'none',
+      },
+    },
+  },
+};
+
+const containerStyles = {
+  root: {
+    maxWidth: '800px',
+    marginLeft: '200px',
+    padding: '30px',
+    background: '#fff',
+    borderRadius: '10px',
+  },
+};
+
+const formSectionStyles = {
+  root: {
+    marginBottom: '32px',
+  },
+};
+
+const textFieldStyles = {
+  root: { width: '100%' },
+  fieldGroup: {
+    ...formStyles.field.input,
+    height: '36px',
+    selectors: {
+      ':hover': {
+        borderColor: '#0078D4',
+      },
+    },
+  },
+  field: {
+    fontSize: '14px',
+  },
+};
+
+const multilineTextFieldStyles = {
+  ...textFieldStyles,
+  fieldGroup: {
+    ...formStyles.field.input,
+    height: 'auto',
+    minHeight: '80px',
+    selectors: {
+      ':hover': {
+        borderColor: '#0078D4',
+      },
+    },
+  },
+};
+
+const dropdownStyles = {
+  root: { width: '100%' },
+  title: {
+    ...formStyles.field.input,
+    height: '36px',
+    lineHeight: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 12px',
+  },
+  dropdown: {
+    width: '100%',
+  },
+};
+
+const datePickerStyles = {
+  root: { 
+    width: '36px',
+    height: '36px',
+  },
+  textField: {
+    root: { 
+      width: '36px',
+      height: '36px',
+      overflow: 'hidden',
+    },
+    wrapper: { border: 'none' },
+    fieldGroup: { 
+      display: 'none',
+      border: 'none'
+    }
+  },
+  wrapper: {
+    width: '36px',
+    height: '36px',
+    position: 'relative',
+  },
+  icon: {
+    position: 'absolute',
+    right: '0',
+    top: '0',
+    height: '36px',
+    width: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    outline: 'none',
+    color: '#666',
+    ':hover': {
+      color: '#0078D4',
+    }
+  },
+  callout: {
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+    borderRadius: '4px',
+  }
+};
+
+const FormField = ({ label, required, children }) => (
+  <div style={formStyles.field.wrapper}>
+    <label style={formStyles.field.label}>
+      {label}{required && <span style={{ color: '#d83b01' }}> *</span>}
+    </label>
+    <div style={{ flex: 1 }}>
+      {children}
+    </div>
+  </div>
+);
+
+const PatientAddFluent = () => {
+  const { setPatientData } = useContext(ToggledContext);
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [newPatient, setNewPatient] = useState({
-    name: "",
-    age: "",
-    gender: "",
-    bloodGroup: "",
-    allergies: "",
-    chronicConditions: "",
-    lastVisit: dayjs(),
+    name: '',
+    age: '',
+    gender: '',
+    bloodGroup: '',
+    allergies: '',
+    chronicConditions: '',
+    diagnosis: '',
+    lastVisit: null,
     nextAppointment: null,
-    diagnosis: "",
     status: true,
-    email: "",
-    phone: "",
+    email: '',
+    phone: '',
   });
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const genderOptions = ['Male', 'Female', 'Other'];
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Name validation
-    if (!newPatient.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    
-    // Age validation
-    if (!newPatient.age) {
-      newErrors.age = 'Age is required';
-    } else if (isNaN(newPatient.age) || newPatient.age < 0 || newPatient.age > 150) {
-      newErrors.age = 'Please enter a valid age between 0 and 150';
-    }
-    
-    // Gender validation
-    if (!newPatient.gender) {
-      newErrors.gender = 'Gender is required';
-    }
-    
-    // Blood group validation
-    if (!newPatient.bloodGroup) {
-      newErrors.bloodGroup = 'Blood group is required';
-    }
-    
-    // Email validation
-    if (newPatient.email && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(newPatient.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    
-    // Phone validation
-    if (newPatient.phone && !/^\+?[\d\s-]{10,}$/.test(newPatient.phone)) {
-      newErrors.phone = 'Please enter a valid phone number (minimum 10 digits)';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleChange = (field, value) => {
+    setNewPatient(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewPatient((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleDateChange = (field, date) => {
-    setNewPatient(prev => ({
-      ...prev,
-      [field]: date
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
-
+  const handleSubmit = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(
-        "https://dashboard-gb84.onrender.com/patientDashboard",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...newPatient,
-            age: Number(newPatient.age),
-            lastVisit: newPatient.lastVisit.format('YYYY-MM-DD'),
-            nextAppointment: newPatient.nextAppointment?.format('YYYY-MM-DD') || null,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to add patient");
+      // Validate required fields
+      if (!newPatient.name.trim()) {
+        setSubmitStatus({ type: MessageBarType.error, message: 'Name is required' });
+        return;
       }
+      if (!newPatient.age) {
+        setSubmitStatus({ type: MessageBarType.error, message: 'Age is required' });
+        return;
+      }
+
+      // Format dates to ISO string if they exist
+      const formattedPatient = {
+        ...newPatient,
+        lastVisit: newPatient.lastVisit ? newPatient.lastVisit.toISOString().split('T')[0] : null,
+        nextAppointment: newPatient.nextAppointment ? newPatient.nextAppointment.toISOString().split('T')[0] : null,
+        age: Number(newPatient.age),
+      };
+
+      const createdPatient = await createPatient(formattedPatient);
       
-      navigate('/patient');
-    } catch (err) {
-      console.error(err);
-      setErrors(prev => ({
-        ...prev,
-        submit: 'Failed to add patient. Please try again.'
-      }));
-    } finally {
-      setLoading(false);
+      // Update the patient list in the context
+      setPatientData(prevData => [...prevData, createdPatient]);
+      
+      // Show success message
+      setSubmitStatus({ type: MessageBarType.success, message: 'Patient added successfully!' });
+      
+      // Reset form
+      setNewPatient({
+        name: '',
+        age: '',
+        gender: '',
+        bloodGroup: '',
+        allergies: '',
+        chronicConditions: '',
+        diagnosis: '',
+        lastVisit: null,
+        nextAppointment: null,
+        status: true,
+        email: '',
+        phone: '',
+      });
+    } catch (error) {
+      console.error('Error creating patient:', error);
+      setSubmitStatus({ type: MessageBarType.error, message: 'Failed to add patient. Please try again.' });
     }
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={0} sx={{ p: 4 }}>
-        <Typography variant="h5" sx={{ mb: 4, color: '#1a237e', fontWeight: 600 }}>
-          Add New Patient
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Grid container spacing={3}>
-            {/* Basic Information */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 2, color: '#1a237e', fontWeight: 500 }}>
-                Basic Information
-              </Typography>
-            </Grid>
+    <Stack styles={containerStyles}>
+      <h1 style={{ 
+        fontSize: '34px', 
+        fontWeight: '600', 
+        color: '#333',
+        marginBottom: '12px',
+        textAlign: 'center'
+      }}>
+        Add New Patient
+      </h1>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Full Name"
-                name="name"
-                value={newPatient.name}
-                onChange={handleInputChange}
-                error={!!errors.name}
-                helperText={errors.name}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+      {submitStatus && (
+        <MessageBar
+          messageBarType={submitStatus.type}
+          onDismiss={() => setSubmitStatus(null)}
+          style={{ marginBottom: '20px' }}
+        >
+          {submitStatus.message}
+        </MessageBar>
+      )}
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Age"
-                name="age"
-                type="number"
-                value={newPatient.age}
-                onChange={handleInputChange}
-                error={!!errors.age}
-                helperText={errors.age}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+      <Stack styles={formSectionStyles}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          marginBottom: '12px',
+          color: '#333'
+        }}>
+          Personal Information
+        </h2>
 
-            <Grid item xs={12} sm={6}>
-              <FormControl 
-                fullWidth 
-                required 
-                error={!!errors.gender}
-              >
-                <InputLabel>Gender</InputLabel>
-                <Select
-                  name="gender"
-                  value={newPatient.gender}
-                  onChange={handleInputChange}
-                  label="Gender"
-                  sx={{
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  {genderOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+        <FormField label="Full Name" required>
+          <TextField
+            value={newPatient.name}
+            onChange={(_, v) => handleChange('name', v)}
+            styles={textFieldStyles}
+          />
+        </FormField>
 
-            <Grid item xs={12} sm={6}>
-              <FormControl 
-                fullWidth 
-                required 
-                error={!!errors.bloodGroup}
-              >
-                <InputLabel>Blood Group</InputLabel>
-                <Select
-                  name="bloodGroup"
-                  value={newPatient.bloodGroup}
-                  onChange={handleInputChange}
-                  label="Blood Group"
-                  sx={{
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  {bloodGroups.map((group) => (
-                    <MenuItem key={group} value={group}>
-                      {group}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+        <FormField label="Age" required>
+          <TextField
+            type="number"
+            value={newPatient.age}
+            onChange={(_, v) => handleChange('age', v)}
+            styles={textFieldStyles}
+          />
+        </FormField>
 
-            {/* Contact Information */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, color: '#1a237e', fontWeight: 500 }}>
-                Contact Information
-              </Typography>
-            </Grid>
+        <FormField label="Email">
+          <TextField
+            type="email"
+            value={newPatient.email}
+            onChange={(_, v) => handleChange('email', v)}
+            styles={textFieldStyles}
+          />
+        </FormField>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={newPatient.email}
-                onChange={handleInputChange}
-                error={!!errors.email}
-                helperText={errors.email}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+        <FormField label="Phone">
+          <TextField
+            value={newPatient.phone}
+            onChange={(_, v) => handleChange('phone', v)}
+            styles={textFieldStyles}
+          />
+        </FormField>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone"
-                name="phone"
-                value={newPatient.phone}
-                onChange={handleInputChange}
-                error={!!errors.phone}
-                helperText={errors.phone}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+        <FormField label="Gender">
+          <Dropdown
+            options={genderOptions}
+            selectedKey={newPatient.gender}
+            onChange={(_, option) => handleChange('gender', option && option.key)}
+            styles={dropdownStyles}
+          />
+        </FormField>
 
-            {/* Medical Information */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, color: '#1a237e', fontWeight: 500 }}>
-                Medical Information
-              </Typography>
-            </Grid>
+        <FormField label="Blood Group">
+          <Dropdown
+            options={bloodGroupOptions}
+            selectedKey={newPatient.bloodGroup}
+            onChange={(_, option) => handleChange('bloodGroup', option && option.key)}
+            styles={dropdownStyles}
+          />
+        </FormField>
+      </Stack>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Allergies"
-                name="allergies"
-                value={newPatient.allergies}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+      <Stack styles={formSectionStyles}>
+        <h2 style={{ 
+          fontSize: '16px', 
+          fontWeight: '600', 
+          marginBottom: '24px',
+          color: '#333'
+        }}>
+          Medical Information
+        </h2>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Chronic Conditions"
-                name="chronicConditions"
-                value={newPatient.chronicConditions}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+        <FormField label="Allergies">
+          <TextField
+            multiline
+            rows={3}
+            value={newPatient.allergies}
+            onChange={(_, v) => handleChange('allergies', v)}
+            styles={multilineTextFieldStyles}
+          />
+        </FormField>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Diagnosis"
-                name="diagnosis"
-                value={newPatient.diagnosis}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    backgroundColor: '#fff',
-                  }
-                }}
-              />
-            </Grid>
+        <FormField label="Chronic Conditions">
+          <TextField
+            multiline
+            rows={3}
+            value={newPatient.chronicConditions}
+            onChange={(_, v) => handleChange('chronicConditions', v)}
+            styles={multilineTextFieldStyles}
+          />
+        </FormField>
 
-            {/* Appointment Information */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, color: '#1a237e', fontWeight: 500 }}>
-                Appointment Information
-              </Typography>
-            </Grid>
+        <FormField label="Diagnosis">
+          <TextField
+            multiline
+            rows={3}
+            value={newPatient.diagnosis}
+            onChange={(_, v) => handleChange('diagnosis', v)}
+            styles={multilineTextFieldStyles}
+          />  
+        </FormField>
 
-            <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Last Visit"
-                  value={newPatient.lastVisit}
-                  onChange={(date) => handleDateChange('lastVisit', date)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: {
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                          backgroundColor: '#fff',
-                        }
-                      }
-                    }
-                  }}
-                />
-              </LocalizationProvider>
-            </Grid>
+        <FormField label="Last Visit">
+          {/* <div style={{ display: 'flex', alignItems: 'center' }}> */}
+            <DatePicker
+              value={newPatient.lastVisit}
+              onSelectDate={date => handleChange('lastVisit', date)}
+              styles={datePickerStyles}
+              placeholder=""
+            />
+            {newPatient.lastVisit && (
+              <span style={{ marginLeft: '8px', fontSize: '14px', color: '#333' }}>
+                {newPatient.lastVisit.toLocaleDateString()}
+              </span>
+            )}
+          {/* </div> */}
+        </FormField>
 
-            <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Next Appointment"
-                  value={newPatient.nextAppointment}
-                  onChange={(date) => handleDateChange('nextAppointment', date)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: {
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                          backgroundColor: '#fff',
-                        }
-                      }
-                    }
-                  }}
-                />
-              </LocalizationProvider>
-            </Grid>
+        <FormField label="Next Appointment">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <DatePicker
+              value={newPatient.nextAppointment}
+              onSelectDate={date => handleChange('nextAppointment', date)}
+              styles={datePickerStyles}
+              placeholder=""
+            />
+            {newPatient.nextAppointment && (
+              <span style={{ marginLeft: '8px', fontSize: '14px', color: '#333' }}>
+                {newPatient.nextAppointment.toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        </FormField>
 
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={newPatient.status}
-                    onChange={(e) => handleInputChange({
-                      target: {
-                        name: 'status',
-                        value: e.target.checked
-                      }
-                    })}
-                    name="status"
-                  />
-                }
-                label="Active Status"
-              />
-            </Grid>
+        <FormField label="Status">
+          <Toggle
+            checked={newPatient.status}
+            onChange={(_, checked) => handleChange('status', checked)}
+            onText="Active"
+            offText="Inactive"
+          />
+        </FormField>
+      </Stack>
 
-            {/* Submit Button */}
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    mt: 3,
-                    mb: 2,
-                    bgcolor: '#1a237e',
-                    '&:hover': {
-                      bgcolor: '#0d1757',
-                    },
-                    borderRadius: 1,
-                    textTransform: 'none',
-                  }}
-                >
-                  {loading ? 'Saving...' : 'Add Patient'}
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-
-          {errors.submit && (
-            <Typography color="error" sx={{ mt: 2, textAlign: 'center' }}>
-              {errors.submit}
-            </Typography>
-          )}
-        </Box>
-      </Paper>
-    </Container>
+      <Stack horizontal horizontalAlign="end" style={{ marginTop: '32px' }}>
+        <PrimaryButton 
+          text="Add Patient" 
+          onClick={handleSubmit}
+          styles={{
+            root: {
+              padding: '0 24px',
+              height: '36px',
+              borderRadius: '4px',
+            },
+          }}
+        />
+      </Stack>
+    </Stack>
   );
 };
 
-export default PatientAdd;
+export default PatientAddFluent;
