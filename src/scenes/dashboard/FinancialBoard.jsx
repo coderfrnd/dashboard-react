@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Typography, Paper, Grid, useTheme } from '@mui/material';
 import { BarChart, PieChart } from '../../components';
 import { FAQ } from '..';
 import Invoices from '../invoices';
 import { motion } from 'framer-motion';
+import { ToggledContext } from "../../App";
 
 const StatCard = ({ title, value, subtitle, icon }) => {
   const theme = useTheme();
@@ -86,8 +87,9 @@ const StatCard = ({ title, value, subtitle, icon }) => {
   );
 };
 
-const FinancialBoard = ({ colors, financialData }) => {
+const FinancialBoard = ({ colors }) => {
   const theme = useTheme();
+  const { financialData = [] } = useContext(ToggledContext);
   
   // Count claims per status for bar chart
   const statusCount = financialData.reduce((acc, claim) => {

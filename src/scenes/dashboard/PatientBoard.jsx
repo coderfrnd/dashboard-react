@@ -6,6 +6,7 @@ import PatientEdit from './PatientEdit';
 import PatientTable from '../../components/PatientTable';
 import { ToggledContext } from "../../App";
 import { tokens } from "../../theme";
+import { deletePatient } from '../../api/services/patientService';
 
 const StatCard = ({ title, value, subtitle, icon }) => (
   <Paper
@@ -36,12 +37,12 @@ const StatCard = ({ title, value, subtitle, icon }) => (
   </Paper>
 );
 
-const PatientBoard = ({ patientData }) => {
+const PatientBoard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const { setPatientData } = useContext(ToggledContext);
+  const { patientData, setPatientData } = useContext(ToggledContext);
 
   const handleEditClick = (patient) => {
     setSelectedPatient(patient);
@@ -50,21 +51,11 @@ const PatientBoard = ({ patientData }) => {
 
   const handleDeleteClick = async (patient) => {
     try {
-      const response = await fetch(
-        `https://dashboard-gb84.onrender.com/patientDashboard/${patient.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete patient");
-      }
-
+      await deletePatient(patient.id);
       setPatientData(prevData => prevData.filter(p => p.id !== patient.id));
-    } catch (err) {
-      console.error("Error deleting patient:", err);
-      alert("Failed to delete patient. Please try again.");
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+      alert('Failed to delete patient. Please try again.');
     }
   };
 

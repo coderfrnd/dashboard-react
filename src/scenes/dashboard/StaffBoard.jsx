@@ -33,8 +33,8 @@ const StatCard = ({ title, value, subtitle, icon }) => (
   </Paper>
 );
 
-const StaffBoard = ({ colors }) => {
-  const { staffData, setStaffData } = useContext(ToggledContext);
+const StaffBoard = ({ colors = {} }) => {
+  const { staffData = [], setStaffData } = useContext(ToggledContext);
 
   const fetchStaffData = async () => {
     try {
@@ -102,6 +102,7 @@ const StaffBoard = ({ colors }) => {
   const totalStaff = staffData.length;
   const onDutyStaff = dutyStatusCount["On Duty"] || 0;
   const departmentCount = Object.keys(deptCount).length;
+  const medicalStaff = staffData.filter(staff => staff.role === 'doctor' || staff.role === 'nurse').length;
 
   return (
     <Box sx={{ p: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
@@ -121,7 +122,7 @@ const StaffBoard = ({ colors }) => {
             title="Total Staff"
             value={totalStaff}
             subtitle="Total employees"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>👥</Box>}
+            icon={<Box component="span" sx={{ color: colors.greenAccent?.[500] || '#4CAF50', fontSize: '24px' }}>👥</Box>}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -129,7 +130,7 @@ const StaffBoard = ({ colors }) => {
             title="On Duty"
             value={onDutyStaff}
             subtitle="Currently working"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>💼</Box>}
+            icon={<Box component="span" sx={{ color: colors.greenAccent?.[500] || '#4CAF50', fontSize: '24px' }}>💼</Box>}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -137,7 +138,7 @@ const StaffBoard = ({ colors }) => {
             title="Departments"
             value={departmentCount}
             subtitle="Active departments"
-            icon={<Box component="span" sx={{ color: colors.greenAccent[500], fontSize: '24px' }}>🏥</Box>}
+            icon={<Box component="span" sx={{ color: colors.greenAccent?.[500] || '#4CAF50', fontSize: '24px' }}>🏥</Box>}
           />
         </Grid>
       </Grid>

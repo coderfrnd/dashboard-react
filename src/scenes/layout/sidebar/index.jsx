@@ -1,92 +1,68 @@
 /* eslint-disable react/prop-types */
-import { Avatar, Box, IconButton, Typography, useTheme, Tooltip, Paper, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Badge, Chip } from "@mui/material";
-import { useContext, useState } from "react";
+import { Box, IconButton, Typography, useTheme, Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton } from "@mui/material";
+import { useState } from "react";
 import { tokens } from "../../../theme";
 import {
-  BarChartOutlined,
-  CalendarTodayOutlined,
-  ContactsOutlined,
-  DashboardOutlined,
-  DonutLargeOutlined,
-  HelpOutlineOutlined,
-  MapOutlined,
   MenuOutlined,
-  PeopleAltOutlined,
+  DashboardOutlined,
+  LocalHospitalOutlined,
+  AttachMoneyOutlined,
+  GroupOutlined,
   PersonOutlined,
-  WavesOutlined,
-  HowToRegOutlined,
+  PeopleAltOutlined,
 } from "@mui/icons-material";
-import avatar from "../../../assets/images/avatar.png";
 import logo from "../../../assets/images/logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { ToggledContext } from "../../../App";
 
 const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { toggled, setToggled } = useContext(ToggledContext);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const location = useLocation();
 
-  const menuItems = [
-    {
-      title: "Dashboard",
-      path: "/",
-      icon: <DashboardOutlined />,
-    },
-    {
-      title: "Patient Data",
-      path: "/patient",
-      icon: <PeopleAltOutlined />,
-    },
-    {
-      title: "Patient History",
-      path: "/patienthistory",
-      icon: <ContactsOutlined />,
-    },
-    {
-      title: "Add new Staff",
-      path: "/form",
-      icon: <PersonOutlined />,
-    },
-    {
-      title: "Attendance Management",
-      path: "/attendance",
-      icon: <HowToRegOutlined />,
-    },
-    {
-      title: "Add Events",
-      path: "/calendar",
-      icon: <CalendarTodayOutlined />,
-    },
-    {
-      title: "Staff Details",
-      path: "/staffhistory",
-      icon: <HelpOutlineOutlined />,
-    },
-    {
-      title: "Financial Details",
-      path: "/finance",
-      icon: <WavesOutlined />,
-    },
-    {
-      title: "Bar Chart",
-      path: "/bar",
-      icon: <BarChartOutlined />,
-    },
-    {
-      title: "Pie Chart",
-      path: "/pie",
-      icon: <DonutLargeOutlined />,
-    },
-    {
-      title: "Geography Chart",
-      path: "/geography",
-      icon: <MapOutlined />,
-    },
-  ];
+  const menuItems = {
+    boards: [
+      {
+        title: "Default Board",
+        path: "/",
+        icon: <DashboardOutlined />,
+      },
+      {
+        title: "Patient Board",
+        path: "/patient",
+        icon: <LocalHospitalOutlined />,
+      },
+      {
+        title: "Add Patient",
+        path: "/add-patient",
+        icon: <LocalHospitalOutlined />,
+      },
+      {
+        title: "Financial Board",
+        path: "/finance",
+        icon: <AttachMoneyOutlined />,
+      },
+      {
+        title: "Staff Board",
+        path: "/staff",
+        icon: <GroupOutlined />,
+      },
+      {
+        title: "Add new Staff",
+        path: "/form",
+        icon: <PersonOutlined />,
+      },
+      {
+        title: "Staff Attendance",
+        path: "/staff-attendance",
+        icon: <PeopleAltOutlined />,
+      }
+    ]
+  };
 
   const MenuItem = ({ item }) => {
+    if (!item) return null;
+    
     const isActive = item.path === location.pathname;
     
     return (
@@ -199,125 +175,11 @@ const SideBar = () => {
         </IconButton>
       </Box>
 
-      <List sx={{ px: 1, pt: 1 }}>
-        <MenuItem item={menuItems[0]} />
-      </List>
-
-      {!collapsed && (
-        <Typography
-          variant="subtitle2"
-          sx={{ 
-            px: 3,
-            py: 1.5,
-            color: "#868dfb",
-            textTransform: "uppercase",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            letterSpacing: "0.5px",
-            opacity: 0.6,
-          }}
-        >
-          Patient Data
-          <Box
-            component="span"
-            sx={{
-              ml: 1,
-              px: 1,
-              py: 0.25,
-              borderRadius: "4px",
-              backgroundColor: colors.greenAccent[500] + "20",
-              color: colors.greenAccent[500],
-              fontSize: "0.65rem",
-              fontWeight: 700,
-            }}
-          >
-            2
-          </Box>
-        </Typography>
-      )}
-      
+      {/* Board Items */}
       <List sx={{ px: 1 }}>
-        <MenuItem item={menuItems[1]} />
-        <MenuItem item={menuItems[2]} />
-      </List>
-
-      {!collapsed && (
-        <Typography
-          variant="subtitle2"
-          sx={{ 
-            px: 3,
-            py: 1.5,
-            color: "#868dfb",
-            textTransform: "uppercase",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            letterSpacing: "0.5px",
-            opacity: 0.6,
-          }}
-        >
-          Staff Data
-          <Box
-            component="span"
-            sx={{
-              ml: 1,
-              px: 1,
-              py: 0.25,
-              borderRadius: "4px",
-              backgroundColor: colors.greenAccent[500] + "20",
-              color: colors.greenAccent[500],
-              fontSize: "0.65rem",
-              fontWeight: 700,
-            }}
-          >
-            3
-          </Box>
-        </Typography>
-      )}
-      
-      <List sx={{ px: 1 }}>
-        <MenuItem item={menuItems[3]} />
-        <MenuItem item={menuItems[4]} />
-        <MenuItem item={menuItems[5]} />
-      </List>
-
-      {!collapsed && (
-        <Typography
-          variant="subtitle2"
-          sx={{ 
-            px: 3,
-            py: 1.5,
-            color: "#868dfb",
-            textTransform: "uppercase",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            letterSpacing: "0.5px",
-            opacity: 0.6,
-          }}
-        >
-          Financial Charts
-          <Box
-            component="span"
-            sx={{
-              ml: 1,
-              px: 1,
-              py: 0.25,
-              borderRadius: "4px",
-              backgroundColor: colors.greenAccent[500] + "20",
-              color: colors.greenAccent[500],
-              fontSize: "0.65rem",
-              fontWeight: 700,
-            }}
-          >
-            4
-          </Box>
-        </Typography>
-      )}
-      
-      <List sx={{ px: 1 }}>
-        <MenuItem item={menuItems[6]} />
-        <MenuItem item={menuItems[7]} />
-        <MenuItem item={menuItems[8]} />
-        <MenuItem item={menuItems[9]} />
+        {menuItems.boards.map((item) => (
+          <MenuItem key={item.path} item={item} />
+        ))}
       </List>
     </Drawer>
   );

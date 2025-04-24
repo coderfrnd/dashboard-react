@@ -13,6 +13,8 @@ import Stream from "./stream";
 import FAQ from "./staffDetails";
 import Geography from "./geography";
 import Patient from "./patientDetails";
+import FinancialBoard from "./dashboard/FinancialBoard";
+import StaffBoard from "./dashboard/StaffBoard.jsx";
 
 export {
   Navbar,
@@ -30,4 +32,6 @@ export {
   FAQ,
   Geography,
   Patient,
+  FinancialBoard,
+  StaffBoard,
 };

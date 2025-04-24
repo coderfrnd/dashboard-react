@@ -17,9 +17,12 @@ import {
   Patient,
 } from "./scenes";
 import AttendanceManagement from "./scenes/attendance/AttendanceManagement";
-
+import PatientAdd from "./scenes/dashboard/PatientAdd";
 import ProtectedRoute from "./ProtectedRoutes"; 
 import AdminLogin from "./scenes/admin/Adminlogin"; 
+import PatientBoard from "./scenes/dashboard/PatientBoard";
+import FinancialBoard from "./scenes/dashboard/FinancialBoard";
+import StaffBoard from "./scenes/dashboard/StaffBoard";
 
 const AppRouter = () => {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(
@@ -50,16 +53,17 @@ const AppRouter = () => {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="/patient" element={<Patient />} />
+          <Route path="/patient" element={<PatientBoard />} />
+          <Route path="/add-patient" element={<PatientAdd />} />
           <Route path="/patienthistory" element={<Contacts />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/form" element={<Form />} />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/staff-attendance" element={<Calendar />} />
           <Route path="/bar" element={<Bar />} />
           <Route path="/pie" element={<Pie />} />
-          <Route path="/finance" element={<Stream />} />
+          <Route path="/finance" element={<FinancialBoard />} />
           <Route path="/line" element={<Line />} />
-          <Route path="/staffhistory" element={<FAQ />} />
+          <Route path="/staff" element={<StaffBoard/>} />
           <Route path="/geography" element={<Geography />} />
           <Route path="/attendance" element={<AttendanceManagement />} />
         </Route>

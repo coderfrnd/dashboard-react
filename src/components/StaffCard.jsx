@@ -35,7 +35,7 @@ import {
   AccessTime
 } from '@mui/icons-material';
 
-const StaffCard = ({ staff, colors }) => {
+const StaffCard = ({ staff, colors = {} }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const open = Boolean(anchorEl);
@@ -88,7 +88,7 @@ const StaffCard = ({ staff, colors }) => {
         <Box 
           sx={{ 
             height: '8px', 
-            background: ` ${staff.onDuty ? `linear-gradient(90deg, ${colors.primary[400]}, ${colors.greenAccent[500]})` : `linear-gradient(90deg, ${colors.primary[400]}, ${colors.redAccent[500]})`}`,
+            background: ` ${staff.onDuty ? `linear-gradient(90deg, ${colors.primary?.[400] || '#1976d2'}, ${colors.greenAccent?.[500] || '#4CAF50'})` : `linear-gradient(90deg, ${colors.primary?.[400] || '#1976d2'}, ${colors.redAccent?.[500] || '#f44336'})`}`,
             borderTopLeftRadius: '12px',
             borderTopRightRadius: '12px'
           }} 
@@ -120,8 +120,8 @@ const StaffCard = ({ staff, colors }) => {
                       height: 12, 
                       borderRadius: '50%', 
                       ml: 1,
-                      bgcolor: staff.onDuty ? colors.greenAccent[500] : colors.redAccent[500],
-                      boxShadow: `0 0 8px ${staff.onDuty ? colors.greenAccent[500] : colors.redAccent[500]}`
+                      bgcolor: staff.onDuty ? colors.greenAccent?.[500] || '#4CAF50' : colors.redAccent?.[500] || '#f44336',
+                      boxShadow: `0 0 8px ${staff.onDuty ? colors.greenAccent?.[500] || '#4CAF50' : colors.redAccent?.[500] || '#f44336'}`
                     }} 
                   />
                 </Box>
@@ -139,7 +139,7 @@ const StaffCard = ({ staff, colors }) => {
               onClick={handleClick}
               sx={{ 
                 color: 'text.secondary',
-                '&:hover': { color: colors.primary[400] }
+                '&:hover': { color: colors.primary?.[400] || '#1976d2' }
               }}
             >
               <MoreVert />
@@ -224,7 +224,7 @@ const StaffCard = ({ staff, colors }) => {
             
             {staff.location && (
               <Box display="flex" alignItems="center">
-                <LocationOn fontSize="small" sx={{ color: colors.primary[400], mr: 1 }} />
+                <LocationOn fontSize="small" sx={{ color: colors.primary?.[400] || '#1976d2', mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   {staff.location}
                 </Typography>
@@ -257,7 +257,7 @@ const StaffCard = ({ staff, colors }) => {
           <Box display="flex" alignItems="center">
             <Avatar 
               sx={{ 
-                bgcolor: colors.greenAccent[500],
+                bgcolor: colors.greenAccent?.[500] || '#4CAF50',
                 mr: 2,
                 width: 50,
                 height: 50
@@ -305,7 +305,7 @@ const StaffCard = ({ staff, colors }) => {
                   
                   {staff.location && (
                     <Box display="flex" alignItems="center">
-                      <LocationOn fontSize="small" sx={{ color: colors.primary[400], mr: 1 }} />
+                      <LocationOn fontSize="small" sx={{ color: colors.primary?.[400] || '#1976d2', mr: 1 }} />
                       <Typography variant="body2">
                         <strong>Location:</strong> {staff.location}
                       </Typography>
@@ -322,7 +322,7 @@ const StaffCard = ({ staff, colors }) => {
                 </Typography>
                 <Box display="flex" flexDirection="column" gap={2}>
                   <Box display="flex" alignItems="center">
-                    <Work fontSize="small" sx={{ color: colors.primary[400], mr: 1 }} />
+                    <Work fontSize="small" sx={{ color: colors.primary?.[400] || '#1976d2', mr: 1 }} />
                     <Typography variant="body2">
                       <strong>Department:</strong> {staff.department}
                     </Typography>
@@ -335,8 +335,8 @@ const StaffCard = ({ staff, colors }) => {
                         height: 12, 
                         borderRadius: '50%', 
                         mr: 1,
-                        bgcolor: staff.onDuty ? colors.greenAccent[500] : colors.redAccent[500],
-                        boxShadow: `0 0 8px ${staff.onDuty ? colors.greenAccent[500] : colors.redAccent[500]}`
+                        bgcolor: staff.onDuty ? colors.greenAccent?.[500] || '#4CAF50' : colors.redAccent?.[500] || '#f44336',
+                        boxShadow: `0 0 8px ${staff.onDuty ? colors.greenAccent?.[500] || '#4CAF50' : colors.redAccent?.[500] || '#f44336'}`
                       }} 
                     />
                     <Typography variant="body2">
@@ -345,14 +345,14 @@ const StaffCard = ({ staff, colors }) => {
                   </Box>
                   
                   <Box display="flex" alignItems="center">
-                    <CalendarToday fontSize="small" sx={{ color: colors.primary[400], mr: 1 }} />
+                    <CalendarToday fontSize="small" sx={{ color: colors.primary?.[400] || '#1976d2', mr: 1 }} />
                     <Typography variant="body2">
                       <strong>Join Date:</strong> {staff.joinDate || "Not specified"}
                     </Typography>
                   </Box>
                   
                   <Box display="flex" alignItems="center">
-                    <AccessTime fontSize="small" sx={{ color: colors.primary[400], mr: 1 }} />
+                    <AccessTime fontSize="small" sx={{ color: colors.primary?.[400] || '#1976d2', mr: 1 }} />
                     <Typography variant="body2">
                       <strong>Work Hours:</strong> {staff.workHours || "Standard (9 AM - 5 PM)"}
                     </Typography>
@@ -380,10 +380,10 @@ const StaffCard = ({ staff, colors }) => {
             onClick={handleCloseDetails}
             sx={{ 
               borderRadius: '8px',
-              borderColor: colors.primary[400],
-              color: colors.primary[400],
+              borderColor: colors.primary?.[400] || '#1976d2',
+              color: colors.primary?.[400] || '#1976d2',
               '&:hover': {
-                borderColor: colors.primary[500],
+                borderColor: colors.primary?.[500] || '#1565c0',
                 bgcolor: 'rgba(0,0,0,0.02)'
               }
             }}
@@ -394,9 +394,9 @@ const StaffCard = ({ staff, colors }) => {
             variant="contained" 
             sx={{ 
               borderRadius: '8px',
-              bgcolor: colors.primary[400],
+              bgcolor: colors.primary?.[400] || '#1976d2',
               '&:hover': {
-                bgcolor: colors.primary[500]
+                bgcolor: colors.primary?.[500] || '#1565c0'
               }
             }}
           >

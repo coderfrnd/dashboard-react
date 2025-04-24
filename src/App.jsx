@@ -3,7 +3,9 @@ import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
 import { Outlet } from "react-router-dom";
-import Invoices from './scenes/invoices';
+import { getAllPatients } from './api/services/patientService';
+import { getAllStaff } from './api/services/staffService';
+import { getAllFinancialRecords } from './api/services/financialService';
 
 export const ToggledContext = createContext(null);
 
@@ -15,61 +17,38 @@ function App() {
   const [staffData, setStaffData] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      let res = await fetch(
-        `https://dashboard-gb84.onrender.com/patientDashboard`
-        // `http://localhost:3000/patientDashboard`
-      );
-      let data = await res.json();
-      setPatientData(data);
-      let finaRes = await fetch(
-        `https://dashboard-gb84.onrender.com/financialDashboard`
-        // `http://localhost:3000/financialDashboard`
-      );
-      let finData = await finaRes.json();
-      setFinancialData(finData);
-      let staffRes = await fetch(
-        `https://dashboard-gb84.onrender.com/staffDashboard`
-        // `http://localhost:3000/staffDashboard`
-      );
-      let staffD = await staffRes.json();
-      setStaffData(staffD);
-    })();
+    const fetchData = async () => {
+      try {
+        const [patients, financial, staff] = await Promise.all([
+          getAllPatients(),
+          getAllFinancialRecords(),
+          getAllStaff()
+        ]);
+        
+        setPatientData(patients);
+        setFinancialData(financial);
+        setStaffData(staff);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <ToggledContext.Provider
-        value={{
-          toggled,
-          setToggled,
-          patientData,
-          setPatientData,
-          financialData,
-          staffData,
-          setStaffData,
-        }}
-      >
-        <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
+    <ToggledContext.Provider value={{ toggled, setToggled, patientData, setPatientData, financialData, setFinancialData, staffData, setStaffData }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box display="flex" position="relative">
           <SideBar />
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-              maxWidth: "100%",
-            }}
-          >
+          <Box flexGrow={1}>
             <Navbar />
-            <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
-              <Outlet />
-            </Box>
+            <Outlet />
           </Box>
         </Box>
-      </ToggledContext.Provider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </ToggledContext.Provider>
   );
 }
 
