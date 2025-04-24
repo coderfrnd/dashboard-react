@@ -2,8 +2,8 @@ import React, { useState, useContext } from 'react';
 import { Box, Typography, Paper, Grid, useTheme } from '@mui/material';
 import BarChart from '../../components/BarChart';
 import PieChart from '../../components/PieChart';
-import PatientCard from '../../components/PatientCard';
 import PatientEdit from './PatientEdit';
+import PatientTable from '../../components/PatientTable';
 import { ToggledContext } from "../../App";
 import { tokens } from "../../theme";
 
@@ -61,7 +61,6 @@ const PatientBoard = ({ patientData }) => {
         throw new Error("Failed to delete patient");
       }
 
-      // Update local state by removing the deleted patient
       setPatientData(prevData => prevData.filter(p => p.id !== patient.id));
     } catch (err) {
       console.error("Error deleting patient:", err);
@@ -103,7 +102,6 @@ const PatientBoard = ({ patientData }) => {
     { status: "Inactive", count: statusCount["Inactive"] },
   ];
 
-  // Calculate total stats
   const totalPatients = Object.values(statusCount).reduce((a, b) => a + b, 0);
   const activePatients = statusCount["Active"] || 0;
   const bloodGroupCount = Object.keys(bloodGrp).length;
@@ -119,7 +117,6 @@ const PatientBoard = ({ patientData }) => {
         </Typography>
       </Box>
 
-      {/* Stats Overview */}
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
@@ -147,7 +144,6 @@ const PatientBoard = ({ patientData }) => {
         </Grid>
       </Grid>
 
-      {/* Charts */}
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} md={6}>
           <Paper
@@ -192,31 +188,12 @@ const PatientBoard = ({ patientData }) => {
         </Grid>
       </Grid>
 
-      {/* Patient Cards Grid */}
-      <Paper
-        sx={{
-          p: 3,
-          borderRadius: '12px',
-          backgroundColor: 'white',
-        }}
-      >
-        <Typography variant="h6" fontWeight="bold" color="#111" mb={3}>
-          Patient Records
-        </Typography>
-        <Grid container spacing={3}>
-          {patientData.map((patient) => (
-            <Grid item xs={12} sm={6} md={4} key={patient.id}>
-              <PatientCard
-                patient={patient}
-                handleEdit={handleEditClick}
-                handleDelete={handleDeleteClick}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
+      <PatientTable 
+        patientData={patientData}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteClick}
+      />
 
-      {/* Edit Modal */}
       <PatientEdit
         open={editModalOpen}
         onClose={() => {

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Box, Typography, Paper, Grid, CircularProgress } from '@mui/material';
 import { BarChart, PieChart } from '../../components';
-import Staff from '../staffDetails';
+import StaffCard from '../../components/StaffCard.jsx';
 import { ToggledContext } from "../../App";
 
 const StatCard = ({ title, value, subtitle, icon }) => (
@@ -186,22 +186,25 @@ const StaffBoard = ({ colors }) => {
           </Paper>
         </Grid>
       </Grid>
+      
+      {/* Staff Cards */}
       <Paper
         sx={{
+          p: 3,
           borderRadius: '12px',
           backgroundColor: 'white',
-          overflow: 'hidden'
         }}
       >
-        <Box p={3} borderBottom="1px solid #eee">
-          <Typography variant="h6" fontWeight="bold" color="#111">
-            Staff Records
-          </Typography>
-        </Box>
-        <Staff 
-          staffData={staffData} 
-          colors={colors} 
-        />
+        <Typography variant="h6" fontWeight="bold" color="#111" mb={3}>
+          Staff Records
+        </Typography>
+        <Grid container spacing={2}>
+          {staffData.map((staff) => (
+            <Grid item xs={12} sm={6} md={4} key={staff.id}>
+              <StaffCard staff={staff} colors={colors} />
+            </Grid>
+          ))}
+        </Grid>
       </Paper>
     </Box>
   );
